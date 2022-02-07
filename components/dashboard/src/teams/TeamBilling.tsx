@@ -26,6 +26,17 @@ export default function TeamBilling() {
     const { showPaymentUI, currency, setCurrency } = useContext(PaymentContext);
     const [isTeamChargebeeCustomer, setIsTeamChargebeeCustomer] = useState<boolean>();
 
+    console.log(
+        "members",
+        members.length,
+        "showPaymentUI",
+        showPaymentUI,
+        "currency",
+        currency,
+        "teamSubscription",
+        teamSubscription,
+    );
+
     useEffect(() => {
         if (!team) {
             return;
