@@ -100,9 +100,11 @@ type DispatchListener struct {
 }
 
 type workspace struct {
-	CFS       CFSController
-	OWI       logrus.Fields
-	HardLimit ResourceLimiter
+	CFS        CgroupCFSController
+	OWI        logrus.Fields
+	BaseLimit  Bandwidth
+	BurstLimit Bandwidth
+	HardLimit  ResourceLimiter
 
 	lastThrottled uint64
 }
@@ -141,6 +143,8 @@ func (d *DispatchListener) source(context.Context) ([]Workspace, error) {
 			ID:          id,
 			NrThrottled: throttled,
 			Usage:       usage,
+			BaseLimit:   w.BaseLimit,
+			BurstLimit:  w.BurstLimit,
 		})
 	}
 	return res, nil
@@ -221,7 +225,8 @@ func (d *DispatchListener) WorkspaceUpdated(ctx context.Context, ws *dispatch.Wo
 		if err != nil {
 			return xerrors.Errorf("cannot enforce fixed CPU limit: %w", err)
 		}
-		wsinfo.HardLimit = FixedLimiter(BandwidthFromQuantity(limit))
+		wsinfo.BaseLimit = BandwidthFromQuantity(limit)
+		wsinfo.BurstLimit = BandwidthFromQuantity(limit)
 	}
 
 	return nil
