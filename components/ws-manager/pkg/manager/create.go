@@ -639,6 +639,20 @@ func (m *Manager) createWorkspaceContainer(startContext *startWorkspaceContext) 
 
 	image := fmt.Sprintf("%s/%s/%s", m.Config.RegistryFacadeHost, regapi.ProviderPrefixRemote, startContext.Request.Id)
 
+	volMounts := []corev1.VolumeMount{
+		{
+			Name:             workspaceVolumeName,
+			MountPath:        workspaceDir,
+			ReadOnly:         false,
+			MountPropagation: &mountPropagation,
+		},
+		{
+			MountPath:        "/.workspace",
+			Name:             "daemon-mount",
+			MountPropagation: &mountPropagation,
+		},
+	}
+
 	return &corev1.Container{
 		Name:            "workspace",
 		Image:           image,
@@ -651,19 +665,7 @@ func (m *Manager) createWorkspaceContainer(startContext *startWorkspaceContext) 
 			Limits:   limits,
 			Requests: requests,
 		},
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:             workspaceVolumeName,
-				MountPath:        workspaceDir,
-				ReadOnly:         false,
-				MountPropagation: &mountPropagation,
-			},
-			{
-				MountPath:        "/.workspace",
-				Name:             "daemon-mount",
-				MountPropagation: &mountPropagation,
-			},
-		},
+		VolumeMounts:             volMounts,
 		ReadinessProbe:           readinessProbe,
 		Env:                      env,
 		Command:                  command,
