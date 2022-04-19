@@ -4,4 +4,5 @@
  */
 
 (import './rules.libsonnet') +
-(import './dashboards.libsonnet')
+(import './dashboards.libsonnet') +
+(import './config.libsonnet')

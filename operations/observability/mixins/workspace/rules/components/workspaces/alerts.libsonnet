@@ -73,7 +73,7 @@
               gitpod_workspace_regular_not_active_percentage > 0.15 AND sum(gitpod_ws_manager_workspace_activity_total) > 100
             |||,
           },
-          {
+        ] + if $._config.excludeGitpodWorkspacesNotStartingAlert then {} else [{
             alert: 'GitpodWorkspacesNotStarting',
             labels: {
               severity: 'critical',
@@ -90,7 +90,7 @@
               rate(gitpod_ws_manager_workspace_startup_seconds_sum{type="REGULAR"}[1m]) == 0
             |||,
           },
-        ],
+          ],
       },
     ],
   },
