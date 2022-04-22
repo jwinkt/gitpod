@@ -250,7 +250,7 @@ type PersistentVolumeClaim struct {
 
 type PersistentVolumeClaim struct {
 	// Size is a size of persistent volume claim to use
-	Size string `json:"size" validate:"required"`
+	Size resource.Quantity `json:"size" validate:"required"`
 
 	// StorageClass is a storage class of persistent volume claim to use
 	StorageClass string `json:"storageClass"`
