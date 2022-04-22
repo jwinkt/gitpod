@@ -6,6 +6,7 @@
 
 import { injectable, inject } from "inversify";
 import { ChargebeeProvider } from "./chargebee-provider";
+import { Chargebee as chargebee } from './chargebee-types';
 import { LogContext, log } from "@gitpod/gitpod-protocol/lib/util/logging";
 
 @injectable()
@@ -41,5 +42,28 @@ export class UpgradeHelper {
                 }
             });
         });
+    }
+
+    // Returns a ratio between 0 and 1:
+    //     0 means we've just finished the term
+    //     1 means we still have the entire term left
+    getCurrentTermRemainingRatio(chargebeeSubscription: chargebee.Subscription): number {
+        if (!chargebeeSubscription.next_billing_at) {
+            throw new Error('subscription.next_billing_at must be set.');
+        }
+        const now = new Date();
+        const nextBilling = new Date(chargebeeSubscription.next_billing_at * 1000);
+        const remainingMs = nextBilling.getTime() - now.getTime();
+
+        const unitToBillingPeriodInDays = { day: 1, week: 7, month: 365.25 / 12, year: 365.25 };
+        let billingPeriodInDays;
+        if (typeof chargebeeSubscription.billing_period === "number" && !!chargebeeSubscription.billing_period_unit) {
+            billingPeriodInDays = chargebeeSubscription.billing_period * unitToBillingPeriodInDays[chargebeeSubscription.billing_period_unit];
+        } else {
+            billingPeriodInDays = 1 * unitToBillingPeriodInDays["month"];
+        }
+        const billingPeriodMs = 1000 * 3600 * 24 * billingPeriodInDays;
+
+        return remainingMs / billingPeriodMs;
     }
 }
