@@ -240,8 +240,9 @@ fi
 						MountPath: "/mnt/node0",
 					},
 					{
-						Name:      "kubelet-pods",
-						MountPath: "/mnt/pods",
+						Name:             "kubelet-pods",
+						MountPath:        "/mnt/pods",
+						MountPropagation: func() *corev1.MountPropagationMode { r := corev1.MountPropagationHostToContainer; return &r }(),
 					},
 					{
 						Name:             "node-mounts",

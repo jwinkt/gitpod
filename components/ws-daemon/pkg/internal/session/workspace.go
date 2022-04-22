@@ -269,6 +269,9 @@ func (s *Workspace) UpdateGitStatus(ctx context.Context, podUid string) (res *cs
 		if err != nil {
 			return nil, err
 		}
+		if len(dirs) == 0 {
+			return nil, xerrors.Errorf("cannot locate workspace pvc mount to update git status")
+		}
 		pvcName := ""
 		// each workspace pod should only have one PVC attached to it
 		for _, d := range dirs {
