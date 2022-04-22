@@ -116,6 +116,10 @@ fi
 				}},
 			},
 			{
+				Name:         "kubelet-pods",
+				VolumeSource: corev1.VolumeSource{HostPath: &corev1.HostPathVolumeSource{Path: "/var/lib/kubelet/pods"}},
+			},
+			{
 				Name: "working-area",
 				VolumeSource: corev1.VolumeSource{HostPath: &corev1.HostPathVolumeSource{
 					Path: HostWorkingArea,
@@ -234,6 +238,10 @@ fi
 					{
 						Name:      "node-fs0",
 						MountPath: "/mnt/node0",
+					},
+					{
+						Name:      "kubelet-pods",
+						MountPath: "/mnt/pods",
 					},
 					{
 						Name:             "node-mounts",

@@ -348,7 +348,7 @@ func (s *WorkspaceService) DisposeWorkspace(ctx context.Context, req *api.Dispos
 	}
 
 	// Update the git status prior to deleting the workspace
-	repo, err = sess.UpdateGitStatus(ctx)
+	repo, err = sess.UpdateGitStatus(ctx, req.PodUid)
 	if err != nil {
 		log.WithError(err).WithField("workspaceId", req.Id).Error("cannot get git status")
 		span.LogKV("error", err.Error())

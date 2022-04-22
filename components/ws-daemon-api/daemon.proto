@@ -121,6 +121,12 @@ message DisposeWorkspaceRequest {
 
     // backup_logs triggers the upload of terminal logs
     bool backup_logs = 3;
+
+    // persistent_volume_claim is enabled if workspace is using PVC
+    bool persistent_volume_claim = 4;
+
+    // pod_uid is set when persistent_volume_claim is enabled
+    string pod_uid = 5;
 }
 
 message DisposeWorkspaceResponse {

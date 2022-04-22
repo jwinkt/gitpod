@@ -258,19 +258,42 @@ func (s *Workspace) SetGitStatus(status *csapi.GitStatus) error {
 }
 
 // UpdateGitStatus attempts to update the LastGitStatus from the workspace's local working copy.
-func (s *Workspace) UpdateGitStatus(ctx context.Context) (res *csapi.GitStatus, err error) {
-	loc := s.Location
-	if loc == "" {
-		// FWB workspaces don't have `Location` set, but rather ServiceLocDaemon and ServiceLocNode.
-		// We'd can't easily produce the Git status, because in this context `mark` isn't mounted, and `upper`
-		// only contains the full git working copy if the content was just initialised.
-		// Something like
-		//   loc = filepath.Join(s.ServiceLocDaemon, "mark", "workspace")
-		// does not work.
-		//
-		// TODO(cw): figure out a way to get ahold of the Git status.
-		log.WithField("loc", loc).WithFields(s.OWI()).Debug("not updating Git status of FWB workspace")
-		return
+func (s *Workspace) UpdateGitStatus(ctx context.Context, podUid string) (res *csapi.GitStatus, err error) {
+	var loc string
+	log.Infof("UpdateGitStatus: loc: %s, checkoutLoc: %s, uid: %s", s.Location, s.CheckoutLocation, podUid)
+	if podUid != "" {
+		loc = filepath.Join("/mnt/pods", podUid)
+		loc = filepath.Join(loc, "volumes/kubernetes.io~csi")
+		log.Infof("readDir: %s", loc)
+		dirs, err := os.ReadDir(loc)
+		if err != nil {
+			return nil, err
+		}
+		pvcName := ""
+		// each workspace pod should only have one PVC attached to it
+		for _, d := range dirs {
+			if d.IsDir() {
+				pvcName = d.Name()
+				break
+			}
+		}
+		loc = filepath.Join(loc, pvcName)
+		loc = filepath.Join(loc, "mount/workspace")
+		log.Infof("final path: %s", loc)
+	} else {
+		loc = s.Location
+		if loc == "" {
+			// FWB workspaces don't have `Location` set, but rather ServiceLocDaemon and ServiceLocNode.
+			// We'd can't easily produce the Git status, because in this context `mark` isn't mounted, and `upper`
+			// only contains the full git working copy if the content was just initialised.
+			// Something like
+			//   loc = filepath.Join(s.ServiceLocDaemon, "mark", "workspace")
+			// does not work.
+			//
+			// TODO(cw): figure out a way to get ahold of the Git status.
+			log.WithField("loc", loc).WithFields(s.OWI()).Debug("not updating Git status of FWB workspace")
+			return
+		}
 	}
 
 	loc = filepath.Join(loc, s.CheckoutLocation)
