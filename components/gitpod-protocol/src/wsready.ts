@@ -4,7 +4,7 @@
  * See License-AGPL.txt in the project root for license information.
  */
 
-// generated using github.com/32leaves/bel on 2022-03-29 17:08:06.113873917 +0000 UTC m=+0.010035965
+// generated using github.com/32leaves/bel on 2022-04-25 09:55:51.632379148 +0000 UTC m=+0.008363150
 // DO NOT MODIFY
 
 export enum WorkspaceInitSource {
@@ -13,5 +13,5 @@ export enum WorkspaceInitSource {
     WorkspaceInitFromOther = "from-other",
 }
 export interface WorkspaceReadyMessage {
-    source: WorkspaceInitSource;
+    source: WorkspaceInitSource
 }
