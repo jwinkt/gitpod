@@ -5,7 +5,14 @@
  */
 
 import { UserService, CheckSignUpParams, CheckTermsParams } from "../../../src/user/user-service";
-import { User, WorkspaceTimeoutDuration, WORKSPACE_TIMEOUT_EXTENDED, WORKSPACE_TIMEOUT_EXTENDED_ALT, WORKSPACE_TIMEOUT_DEFAULT_LONG, WORKSPACE_TIMEOUT_DEFAULT_SHORT } from "@gitpod/gitpod-protocol";
+import {
+    User,
+    WorkspaceTimeoutDuration,
+    WORKSPACE_TIMEOUT_EXTENDED,
+    WORKSPACE_TIMEOUT_EXTENDED_ALT,
+    WORKSPACE_TIMEOUT_DEFAULT_LONG,
+    WORKSPACE_TIMEOUT_DEFAULT_SHORT,
+} from "@gitpod/gitpod-protocol";
 import { inject } from "inversify";
 import { LicenseEvaluator } from "@gitpod/licensor/lib";
 import { Feature } from "@gitpod/licensor/lib/api";
@@ -43,9 +50,9 @@ export class UserServiceEE extends UserService {
     public workspaceTimeoutToDuration(timeout: WorkspaceTimeoutDuration): string {
         switch (timeout) {
             case WORKSPACE_TIMEOUT_DEFAULT_SHORT:
-                return "30m";
+                return "10m";
             case WORKSPACE_TIMEOUT_DEFAULT_LONG:
-                return this.config.workspaceDefaults.timeoutDefault || "60m";
+                return this.config.workspaceDefaults.timeoutDefault || "5m";
             case WORKSPACE_TIMEOUT_EXTENDED:
             case WORKSPACE_TIMEOUT_EXTENDED_ALT:
                 return this.config.workspaceDefaults.timeoutExtended || "180m";
@@ -54,9 +61,9 @@ export class UserServiceEE extends UserService {
 
     public durationToWorkspaceTimeout(duration: string): WorkspaceTimeoutDuration {
         switch (duration) {
-            case "30m":
+            case "10m":
                 return WORKSPACE_TIMEOUT_DEFAULT_SHORT;
-            case this.config.workspaceDefaults.timeoutDefault || "60m":
+            case this.config.workspaceDefaults.timeoutDefault || "5m":
                 return WORKSPACE_TIMEOUT_DEFAULT_LONG;
             case this.config.workspaceDefaults.timeoutExtended || "180m":
                 return WORKSPACE_TIMEOUT_EXTENDED_ALT;

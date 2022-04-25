@@ -156,6 +156,7 @@ func (d *DispatchListener) sink(id string, limit Bandwidth, burst bool) {
 
 	ws, ok := d.workspaces[id]
 	if !ok {
+		log.Info("Return ok")
 		// this can happen if the workspace has gone away inbetween a distributor cycle
 		return
 	}
@@ -167,7 +168,7 @@ func (d *DispatchListener) sink(id string, limit Bandwidth, burst bool) {
 		log.WithError(err).WithFields(ws.OWI).Warn("cannot set CPU limit")
 	}
 	if changed {
-		log.WithFields(ws.OWI).WithField("limit", limit).Debug("applied new CPU limit")
+		log.WithFields(ws.OWI).WithField("limit", limit).Info("applied new CPU limit")
 	}
 }
 

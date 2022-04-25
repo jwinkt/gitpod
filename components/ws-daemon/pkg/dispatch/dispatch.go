@@ -145,6 +145,7 @@ func (d *Dispatch) Start() error {
 
 // Close stops the dispatch and cancels all previously started listener
 func (d *Dispatch) Close() error {
+	log.Info("Trying the despatch closing.")
 	d.mu.Lock()
 	defer d.mu.Unlock()
 

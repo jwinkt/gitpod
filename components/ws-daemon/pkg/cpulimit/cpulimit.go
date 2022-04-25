@@ -9,6 +9,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/gitpod-io/gitpod/common-go/log"
 	"github.com/sirupsen/logrus"
 )
 
@@ -128,6 +129,7 @@ func (d *Distributor) Tick(dt time.Duration) (DistributorDebug, error) {
 		h.Update(w)
 		wsidx[w.ID] = w
 	}
+
 	for oldWS := range d.History {
 		if _, found := wsidx[oldWS]; !found {
 			delete(d.History, oldWS)
@@ -155,6 +157,7 @@ func (d *Distributor) Tick(dt time.Duration) (DistributorDebug, error) {
 	})
 
 	if d.LastTickUsage == 0 {
+		log.Info("return because of last tick usage")
 		d.LastTickUsage = totalUsage
 		return DistributorDebug{
 			BandwidthAvail: d.TotalBandwidth,
@@ -173,6 +176,7 @@ func (d *Distributor) Tick(dt time.Duration) (DistributorDebug, error) {
 
 	// enforce limits
 	var burstBandwidth Bandwidth
+	log.Infof("wsorder: %d", len(wsOrder))
 	for _, id := range wsOrder {
 		ws := d.History[id]
 		limiter := d.Limiter
@@ -201,6 +205,7 @@ func (d *Distributor) Tick(dt time.Duration) (DistributorDebug, error) {
 			burstBandwidth += limit
 		}
 
+		// log.Infof("Call Sink, limit: %v, burst: %v", limit, burst)
 		d.Sink(id, limit, burst)
 	}
 
