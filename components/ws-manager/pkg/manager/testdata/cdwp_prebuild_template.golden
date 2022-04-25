@@ -180,6 +180,17 @@
                         "successThreshold": 1,
                         "failureThreshold": 600
                     },
+                    "lifecycle": {
+                        "preStop": {
+                            "exec": {
+                                "command": [
+                                    "sh",
+                                    "-c",
+                                    "/.supervisor/workspacekit lift /.workspace/mark/.workspace/.gitpod/prestophook.sh"
+                                ]
+                            }
+                        }
+                    },
                     "terminationMessagePolicy": "File",
                     "imagePullPolicy": "IfNotPresent",
                     "securityContext": {

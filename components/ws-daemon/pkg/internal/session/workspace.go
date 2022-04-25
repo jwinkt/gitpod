@@ -262,27 +262,14 @@ func (s *Workspace) UpdateGitStatus(ctx context.Context, podUid string) (res *cs
 	var loc string
 	log.Infof("UpdateGitStatus: loc: %s, checkoutLoc: %s, uid: %s", s.Location, s.CheckoutLocation, podUid)
 	if podUid != "" {
-		loc = filepath.Join("/mnt/pods", podUid)
-		loc = filepath.Join(loc, "volumes/kubernetes.io~csi")
-		log.Infof("readDir: %s", loc)
-		dirs, err := os.ReadDir(loc)
+		loc = filepath.Join(s.ServiceLocDaemon, "mark/.workspace")
+		log.Infof("git status location: %s", loc)
+		stat, err := git.GitStatusFromFiles(ctx, loc)
 		if err != nil {
 			return nil, err
 		}
-		if len(dirs) == 0 {
-			return nil, xerrors.Errorf("cannot locate workspace pvc mount to update git status")
-		}
-		pvcName := ""
-		// each workspace pod should only have one PVC attached to it
-		for _, d := range dirs {
-			if d.IsDir() {
-				pvcName = d.Name()
-				break
-			}
-		}
-		loc = filepath.Join(loc, pvcName)
-		loc = filepath.Join(loc, "mount/workspace")
-		log.Infof("final path: %s", loc)
+
+		s.LastGitStatus = toGitStatus(stat)
 	} else {
 		loc = s.Location
 		if loc == "" {
@@ -297,28 +284,28 @@ func (s *Workspace) UpdateGitStatus(ctx context.Context, podUid string) (res *cs
 			log.WithField("loc", loc).WithFields(s.OWI()).Debug("not updating Git status of FWB workspace")
 			return
 		}
+
+		loc = filepath.Join(loc, s.CheckoutLocation)
+		if !git.IsWorkingCopy(loc) {
+			log.WithField("loc", loc).WithField("checkout location", s.CheckoutLocation).WithFields(s.OWI()).Debug("did not find a Git working copy - not updating Git status")
+			return nil, nil
+		}
+
+		c := git.Client{Location: loc}
+
+		err = c.Git(ctx, "config", "--global", "--add", "safe.directory", loc)
+		if err != nil {
+			log.WithError(err).WithFields(s.OWI()).Warn("cannot persist latest Git status")
+			err = nil
+		}
+
+		stat, err := c.Status(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		s.LastGitStatus = toGitStatus(stat)
 	}
-
-	loc = filepath.Join(loc, s.CheckoutLocation)
-	if !git.IsWorkingCopy(loc) {
-		log.WithField("loc", loc).WithField("checkout location", s.CheckoutLocation).WithFields(s.OWI()).Debug("did not find a Git working copy - not updating Git status")
-		return nil, nil
-	}
-
-	c := git.Client{Location: loc}
-
-	err = c.Git(ctx, "config", "--global", "--add", "safe.directory", loc)
-	if err != nil {
-		log.WithError(err).WithFields(s.OWI()).Warn("cannot persist latest Git status")
-		err = nil
-	}
-
-	stat, err := c.Status(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	s.LastGitStatus = toGitStatus(stat)
 
 	err = s.persist()
 	if err != nil {

@@ -661,6 +661,13 @@ func (m *Manager) createWorkspaceContainer(startContext *startWorkspaceContext) 
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: startContext.IDEPort},
 		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: &corev1.LifecycleHandler{
+				Exec: &corev1.ExecAction{
+					Command: []string{"sh", "-c", "/.supervisor/workspacekit lift /.workspace/mark/.workspace/.gitpod/prestophook.sh"},
+				},
+			},
+		},
 		Resources: corev1.ResourceRequirements{
 			Limits:   limits,
 			Requests: requests,
