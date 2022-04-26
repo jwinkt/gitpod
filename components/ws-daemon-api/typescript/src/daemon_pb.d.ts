@@ -191,8 +191,6 @@ export class DisposeWorkspaceRequest extends jspb.Message {
     setBackupLogs(value: boolean): DisposeWorkspaceRequest;
     getPersistentVolumeClaim(): boolean;
     setPersistentVolumeClaim(value: boolean): DisposeWorkspaceRequest;
-    getPodUid(): string;
-    setPodUid(value: string): DisposeWorkspaceRequest;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): DisposeWorkspaceRequest.AsObject;
@@ -210,7 +208,6 @@ export namespace DisposeWorkspaceRequest {
         backup: boolean,
         backupLogs: boolean,
         persistentVolumeClaim: boolean,
-        podUid: string,
     }
 }
 

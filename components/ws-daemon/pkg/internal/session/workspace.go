@@ -258,12 +258,10 @@ func (s *Workspace) SetGitStatus(status *csapi.GitStatus) error {
 }
 
 // UpdateGitStatus attempts to update the LastGitStatus from the workspace's local working copy.
-func (s *Workspace) UpdateGitStatus(ctx context.Context, podUid string) (res *csapi.GitStatus, err error) {
+func (s *Workspace) UpdateGitStatus(ctx context.Context, persistent_volume_claim bool) (res *csapi.GitStatus, err error) {
 	var loc string
-	log.Infof("UpdateGitStatus: loc: %s, checkoutLoc: %s, uid: %s", s.Location, s.CheckoutLocation, podUid)
-	if podUid != "" {
+	if persistent_volume_claim {
 		loc = filepath.Join(s.ServiceLocDaemon, "prestophookdata")
-		log.Infof("git status location: %s", loc)
 		stat, err := git.GitStatusFromFiles(ctx, loc)
 		if err != nil {
 			return nil, err
