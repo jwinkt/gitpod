@@ -262,7 +262,7 @@ func (s *Workspace) UpdateGitStatus(ctx context.Context, podUid string) (res *cs
 	var loc string
 	log.Infof("UpdateGitStatus: loc: %s, checkoutLoc: %s, uid: %s", s.Location, s.CheckoutLocation, podUid)
 	if podUid != "" {
-		loc = filepath.Join(s.ServiceLocDaemon, "mark/.workspace")
+		loc = filepath.Join(s.ServiceLocDaemon, "prestophookdata")
 		log.Infof("git status location: %s", loc)
 		stat, err := git.GitStatusFromFiles(ctx, loc)
 		if err != nil {

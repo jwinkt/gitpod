@@ -469,9 +469,9 @@ func contentDescriptorToLayer(cdesc []byte) (*Layer, error) {
 
 var prestophookScript = `#!/bin/bash
 cd ${GITPOD_REPO_ROOT}
-git status --porcelain=v2 --branch -uall > /.workspace/mark/.workspace/git1.txt
-git log --pretty='%h: %s' --branches --not --remotes > /.workspace/mark/.workspace/git2.txt
-git log --pretty=%H -n 1 > /.workspace/mark/.workspace/git3.txt
+git status --porcelain=v2 --branch -uall > /.workspace/prestophookdata/git_status.txt
+git log --pretty='%h: %s' --branches --not --remotes > /.workspace/prestophookdata/git_log_1.txt
+git log --pretty=%H -n 1 > /.workspace/prestophookdata/git_log_2.txt
 `
 
 // version of this function for persistent volume claim feature
