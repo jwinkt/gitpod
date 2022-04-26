@@ -664,7 +664,7 @@ func (m *Manager) createWorkspaceContainer(startContext *startWorkspaceContext) 
 		Lifecycle: &corev1.Lifecycle{
 			PreStop: &corev1.LifecycleHandler{
 				Exec: &corev1.ExecAction{
-					Command: []string{"sh", "-c", "/.supervisor/workspacekit lift /.workspace/mark/.workspace/.gitpod/prestophook.sh"},
+					Command: []string{"sh", "-c", "/.supervisor/workspacekit lift /.supervisor/prestophook.sh"},
 				},
 			},
 		},

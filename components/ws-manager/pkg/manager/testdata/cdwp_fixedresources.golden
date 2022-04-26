@@ -179,7 +179,7 @@
                                 "command": [
                                     "sh",
                                     "-c",
-                                    "/.supervisor/workspacekit lift /.workspace/mark/.workspace/.gitpod/prestophook.sh"
+                                    "/.supervisor/workspacekit lift /.supervisor/prestophook.sh"
                                 ]
                             }
                         }
