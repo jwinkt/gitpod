@@ -172,17 +172,6 @@
                         "successThreshold": 1,
                         "failureThreshold": 600
                     },
-                    "lifecycle": {
-                        "preStop": {
-                            "exec": {
-                                "command": [
-                                    "/bin/sh",
-                                    "-c",
-                                    "/.supervisor/workspacekit lift /.supervisor/prestophook.sh"
-                                ]
-                            }
-                        }
-                    },
                     "terminationMessagePolicy": "File",
                     "imagePullPolicy": "IfNotPresent",
                     "securityContext": {
