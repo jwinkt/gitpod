@@ -174,7 +174,7 @@
                         "preStop": {
                             "exec": {
                                 "command": [
-                                    "sh",
+                                    "/bin/sh",
                                     "-c",
                                     "/.supervisor/workspacekit lift /.supervisor/prestophook.sh"
                                 ]
