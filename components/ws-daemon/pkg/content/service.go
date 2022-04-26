@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"syscall"
 	"time"
@@ -238,6 +239,19 @@ func (s *WorkspaceService) InitWorkspace(ctx context.Context, req *api.InitWorks
 			log.WithError(err).WithField("workspaceId", req.Id).Error("cannot initialize workspace")
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
 		}
+	}
+
+	// temp hack
+	deamonDir := fmt.Sprintf("%s-daemon", req.Id)
+	tmpDir := filepath.Join(s.config.WorkingArea, deamonDir, "tmpDir")
+	log.Infof("Creating temp dir: %s", tmpDir)
+	_, err = exec.CommandContext(ctx, "mkdir", "-p", tmpDir).CombinedOutput()
+	if err != nil {
+		log.Errorf("failed to creat dir: %v", err)
+	}
+	_, err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", wsinit.GitpodUID, wsinit.GitpodGID), tmpDir).CombinedOutput()
+	if err != nil {
+		log.Errorf("failed to chown: %v", err)
 	}
 
 	// Tell the world we're done
