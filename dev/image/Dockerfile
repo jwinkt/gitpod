@@ -21,11 +21,6 @@ RUN mkdir -p /tmp/helm/ \
     && rm -rf /tmp/helm/ \
     && helm completion bash > /usr/share/bash-completion/completions/helm
 
-### temp. do not submit
-RUN curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.gpg | sudo apt-key add - \
-    && curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list \
-    && apt-get update
-
 ### kubernetes ###
 RUN mkdir -p /usr/local/kubernetes/ && \
     curl -fsSL https://github.com/kubernetes/kubernetes/releases/download/v1.23.6/kubernetes.tar.gz \
