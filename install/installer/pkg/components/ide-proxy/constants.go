@@ -5,9 +5,11 @@
 package ide_proxy
 
 const (
-	Component     = "ide-proxy"
-	ContainerPort = 80
-	PortName      = "http"
-	ServicePort   = 80
-	ReadinessPort = 8080
+	Component          = "ide-proxy"
+	ContainerPort      = 80
+	PortName           = "http"
+	ServicePort        = 80
+	ReadinessPort      = 8080
+	PrometheusPort     = 9500
+	PrometheusPortName = "metrics"
 )
