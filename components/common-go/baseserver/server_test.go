@@ -7,10 +7,13 @@ package baseserver_test
 import (
 	"fmt"
 	"github.com/gitpod-io/gitpod/common-go/baseserver"
+	"github.com/gitpod-io/gitpod/common-go/certtest"
 	"github.com/gitpod-io/gitpod/common-go/pprof"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -76,4 +79,31 @@ func TestServer_ServesPprof(t *testing.T) {
 	resp, err := http.Get(srv.HTTPAddress() + pprof.Path)
 	require.NoError(t, err)
 	require.Equalf(t, http.StatusOK, resp.StatusCode, "must serve pprof on %s", pprof.Path)
+}
+
+func TestServer_WithTS(t *testing.T) {
+	cert, key := getCertificatesAsFiles(t)
+	srv := baseserver.NewForTests(t, baseserver.WithTLS(cert, key))
+
+	baseserver.StartServerForTests(t, srv)
+}
+
+func getCertificatesAsFiles(t *testing.T) (string, string) {
+	t.Helper()
+
+	cert, err := ioutil.TempFile("", "localhost_cert")
+	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(cert.Name(), []byte(certtest.LocalhostPublic), 0644))
+	t.Cleanup(func() {
+		require.NoError(t, os.Remove(cert.Name()))
+	})
+
+	key, err := ioutil.TempFile("", "localhost_key")
+	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(key.Name(), []byte(certtest.LocalhostPrivate), 0644))
+	t.Cleanup(func() {
+		require.NoError(t, os.Remove(key.Name()))
+	})
+
+	return cert.Name(), key.Name()
 }
