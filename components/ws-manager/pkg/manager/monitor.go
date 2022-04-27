@@ -860,11 +860,16 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 		tpe = api.WorkspaceType_REGULAR
 	}
 
-	pvcFeatureEnabled := false
+	var pvcFeatureEnabled bool
 	if wso.Pod != nil {
 		_, pvcFeatureEnabled = wso.Pod.Labels[pvcWorkspaceFeatureAnnotation]
 	}
 
+	var (
+		createdSnapshotVolume bool
+		readySnapshotVolume   bool
+		deletedPVC            bool
+	)
 	doBackup := wso.WasEverReady() && !wso.IsWorkspaceHeadless()
 	doBackupLogs := tpe == api.WorkspaceType_PREBUILD
 	doSnapshot := tpe == api.WorkspaceType_PREBUILD
@@ -905,31 +910,60 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 		}()
 
 		if pvcFeatureEnabled {
-			// create snapshot object out of PVC
-			//volumesnapshotRes := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
-			snapshot := &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "snapshot.storage.k8s.io/v1",
-					"kind":       "VolumeSnapshot",
-					"metadata": map[string]interface{}{
-						"name":      wso.Pod.Name,
-						"namespace": m.manager.Config.Namespace,
-					},
-					"spec": map[string]interface{}{
-						"volumeSnapshotClassName": "csi-gce-pd-snapshot-class",
-						"source": map[string]interface{}{
-							"persistentVolumeClaimName": wso.Pod.Name,
+			if !createdSnapshotVolume {
+				log.Infof("Creating snapshotVolume: %s", wso.Pod.Name)
+				// create snapshot object out of PVC
+				//volumesnapshotRes := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
+				snapshot := &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"apiVersion": "snapshot.storage.k8s.io/v1",
+						"kind":       "VolumeSnapshot",
+						"metadata": map[string]interface{}{
+							"name":      wso.Pod.Name,
+							"namespace": m.manager.Config.Namespace,
+						},
+						"spec": map[string]interface{}{
+							"volumeSnapshotClassName": "csi-gce-pd-snapshot-class",
+							"source": map[string]interface{}{
+								"persistentVolumeClaimName": wso.Pod.Name,
+							},
 						},
 					},
-				},
-			}
+				}
 
-			err = m.manager.Clientset.Create(ctx, snapshot)
-			if err != nil {
-				log.WithError(err).Error("cannot create volumesnapshot")
-				err = xerrors.Errorf("cannot create volumesnapshot: %v", err)
+				err = m.manager.Clientset.Create(ctx, snapshot)
+				if err != nil {
+					log.WithError(err).Error("cannot create volumesnapshot")
+					err = xerrors.Errorf("cannot create volumesnapshot: %v", err)
+				}
+				createdSnapshotVolume = true
 			}
 			// todo: add wait until snapshot status is updated to ready
+			if createdSnapshotVolume {
+				readySnapshotVolume = true
+			}
+
+			// backup is done and we are ready to kill the pod, mark PVC for deletion
+			if readySnapshotVolume && !deletedPVC {
+				// pvc name is the same as pod name
+				pvcName := wso.Pod.Name
+				log.Infof("Deleting PVC: %s", pvcName)
+				// todo: once we add snapshot objects, this will be changed to create snapshot object first
+				pvcErr := m.manager.Clientset.Delete(ctx,
+					&corev1.PersistentVolumeClaim{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      pvcName,
+							Namespace: m.manager.Config.Namespace,
+						},
+					},
+				)
+				span.LogKV("event", "pvc deleted")
+
+				if pvcErr != nil {
+					log.WithError(pvcErr).Errorf("failed to delete pvc `%s`", pvcName)
+				}
+				deletedPVC = true
+			}
 		} else {
 			if doSnapshot {
 				// if this is a prebuild take a snapshot and mark the workspace
@@ -1021,27 +1055,6 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 		log.WithError(err).WithField("type", wsType).Warn("cannot get finalize time histogram metric")
 	}
 	hist.Observe(time.Since(t).Seconds())
-
-	// backup is done and we are ready to kill the pod, mark PVC for deletion
-	if pvcFeatureEnabled {
-		// pvc name is the same as pod name
-		pvcName := wso.Pod.Name
-		log.Infof("Deleting PVC: %s", pvcName)
-		// todo: once we add snapshot objects, this will be changed to create snapshot object first
-		pvcErr := m.manager.Clientset.Delete(ctx,
-			&corev1.PersistentVolumeClaim{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      pvcName,
-					Namespace: m.manager.Config.Namespace,
-				},
-			},
-		)
-		span.LogKV("event", "pvc deleted")
-
-		if pvcErr != nil {
-			log.WithError(pvcErr).Errorf("failed to delete pvc `%s`", pvcName)
-		}
-	}
 
 	disposalStatus = &workspaceDisposalStatus{
 		BackupComplete: true,
