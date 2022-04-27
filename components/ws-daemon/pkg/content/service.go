@@ -300,6 +300,8 @@ func (s *WorkspaceService) DisposeWorkspace(ctx context.Context, req *api.Dispos
 	defer tracing.FinishSpan(span, &err)
 	log.WithField("req", req.String()).WithFields(log.OWI("", "", req.Id)).Debug("DisposeWorkspace called")
 
+	log.Infof("DisposeWorkspace (%s): %v", req.Id, *req)
+
 	if req.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "ID is required")
 	}
@@ -373,6 +375,7 @@ func (s *WorkspaceService) DisposeWorkspace(ctx context.Context, req *api.Dispos
 		resp.GitStatus = repo
 	}
 
+	log.Infof("Deleting (%s) from store", req.Id)
 	err = s.store.Delete(ctx, req.Id)
 	if err != nil {
 		log.WithError(err).WithField("workspaceId", req.Id).Error("cannot delete workspace from store")
