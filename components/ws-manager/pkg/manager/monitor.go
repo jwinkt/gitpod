@@ -24,7 +24,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -923,7 +922,21 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 			if !createdSnapshotVolume {
 				log.Infof("Creating snapshotVolume: %s", snapshotName)
 				// create snapshot object out of PVC
-				snapshot := &unstructured.Unstructured{
+				snapshotClassname := "csi-gce-pd-snapshot-class"
+				volumeSnapshot := &volumesnapshotv1.VolumeSnapshot{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      snapshotName,
+						Namespace: m.manager.Config.Namespace,
+					},
+					Spec: volumesnapshotv1.VolumeSnapshotSpec{
+						Source: volumesnapshotv1.VolumeSnapshotSource{
+							PersistentVolumeClaimName: &pvcName,
+						},
+						VolumeSnapshotClassName: &snapshotClassname,
+					},
+				}
+				//volumesnapshotRes := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
+				/*snapshot := &unstructured.Unstructured{
 					Object: map[string]interface{}{
 						"apiVersion": "snapshot.storage.k8s.io/v1",
 						"kind":       "VolumeSnapshot",
@@ -938,9 +951,9 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 							},
 						},
 					},
-				}
+				}*/
 
-				err = m.manager.Clientset.Create(ctx, snapshot)
+				err = m.manager.Clientset.Create(ctx, volumeSnapshot)
 				if err != nil {
 					log.WithError(err).Error("cannot create volumesnapshot")
 					err = xerrors.Errorf("cannot create volumesnapshot: %v", err)

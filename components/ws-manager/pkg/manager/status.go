@@ -25,6 +25,7 @@ import (
 	"github.com/gitpod-io/gitpod/common-go/util"
 	regapi "github.com/gitpod-io/gitpod/registry-facade/api"
 	"github.com/gitpod-io/gitpod/ws-manager/api"
+	volumesnapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 )
 
 const (
@@ -47,6 +48,10 @@ func init() {
 	err := corev1.AddToScheme(scheme)
 	if err != nil {
 		log.WithError(err).Fatal("cannot register Kubernetes core schema - this should never happen")
+	}
+	err = volumesnapshotv1.AddToScheme(scheme)
+	if err != nil {
+		log.WithError(err).Fatal("cannot register Kubernetes volumesnapshotv1 schema - this should never happen")
 	}
 }
 
