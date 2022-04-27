@@ -22,9 +22,11 @@ import (
 	grpc_status "google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	corev1 "k8s.io/api/core/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,6 +38,8 @@ import (
 	wsdaemon "github.com/gitpod-io/gitpod/ws-daemon/api"
 	"github.com/gitpod-io/gitpod/ws-manager/api"
 	"github.com/gitpod-io/gitpod/ws-manager/pkg/manager/internal/workpool"
+
+	volumesnapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 )
 
 const (
@@ -913,28 +917,26 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 		}()
 
 		if pvcFeatureEnabled {
+			snapshotName := wso.Pod.Name
+			pvcName := wso.Pod.Name
 			if !createdSnapshotVolume {
-				log.Infof("Creating snapshotVolume: %s", wso.Pod.Name)
+				log.Infof("Creating snapshotVolume: %s", snapshotName)
 				// create snapshot object out of PVC
-				//volumesnapshotRes := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
-				snapshot := &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"apiVersion": "snapshot.storage.k8s.io/v1",
-						"kind":       "VolumeSnapshot",
-						"metadata": map[string]interface{}{
-							"name":      wso.Pod.Name,
-							"namespace": m.manager.Config.Namespace,
+				snapshotClassname := "csi-gce-pd-snapshot-class"
+				volumeSnapshot := &volumesnapshotv1.VolumeSnapshot{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      snapshotName,
+						Namespace: m.manager.Config.Namespace,
+					},
+					Spec: volumesnapshotv1.VolumeSnapshotSpec{
+						Source: volumesnapshotv1.VolumeSnapshotSource{
+							PersistentVolumeClaimName: &pvcName,
 						},
-						"spec": map[string]interface{}{
-							"volumeSnapshotClassName": "csi-gce-pd-snapshot-class",
-							"source": map[string]interface{}{
-								"persistentVolumeClaimName": wso.Pod.Name,
-							},
-						},
+						VolumeSnapshotClassName: &snapshotClassname,
 					},
 				}
 
-				err = m.manager.Clientset.Create(ctx, snapshot)
+				err = m.manager.Clientset.Create(ctx, volumeSnapshot)
 				if err != nil {
 					log.WithError(err).Error("cannot create volumesnapshot")
 					err = xerrors.Errorf("cannot create volumesnapshot: %v", err)
@@ -943,13 +945,38 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 			}
 			// todo: add wait until snapshot status is updated to ready
 			if createdSnapshotVolume {
+				backoff := wait.Backoff{
+					Steps:    10,
+					Duration: 100 * time.Millisecond,
+					Factor:   2.5,
+					Jitter:   0.1,
+					Cap:      5 * time.Minute,
+				}
+				err = wait.ExponentialBackoff(backoff, func() (bool, error) {
+					var volumeSnapshot volumesnapshotv1.VolumeSnapshot
+					err := m.manager.Clientset.Get(ctx, types.NamespacedName{Namespace: m.manager.Config.Namespace, Name: snapshotName}, &volumeSnapshot)
+					if err != nil {
+						if k8serr.IsNotFound(err) {
+							// volumesnapshot doesn't exist yet, retry again
+							return false, nil
+						}
+						log.WithError(err).WithField("VolumeSnapshot.Name", snapshotName).Error("was unable to get volume snapshot")
+						return false, err
+					}
+					if volumeSnapshot.Status != nil && volumeSnapshot.Status.ReadyToUse != nil && *(volumeSnapshot.Status.ReadyToUse) {
+						return true, nil
+					}
+					return false, nil
+				})
+				if err != nil {
+					log.WithError(err).Errorf("failed to get volume snapshot `%s`", snapshotName)
+					return true, nil, err
+				}
 				readySnapshotVolume = true
 			}
 
 			// backup is done and we are ready to kill the pod, mark PVC for deletion
 			if readySnapshotVolume && !deletedPVC {
-				// pvc name is the same as pod name
-				pvcName := wso.Pod.Name
 				log.Infof("Deleting PVC: %s", pvcName)
 				// todo: once we add snapshot objects, this will be changed to create snapshot object first
 				pvcErr := m.manager.Clientset.Delete(ctx,
