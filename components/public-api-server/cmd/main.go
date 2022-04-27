@@ -12,8 +12,14 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/protobuf/encoding/protojson"
 	"net/http"
+	"os"
 	"strings"
+)
+
+var (
+	apiAddress string
 )
 
 func main() {
@@ -24,12 +30,13 @@ func main() {
 		Use: "api-cli",
 	}
 
+	cmd.PersistentFlags().StringVar(&apiAddress, "address", "api.main.staging.gitpod-dev.com:443", "Address of the API endpoint. Should be in the form <host>:<port>.")
+
 	cmd.AddCommand(newWorkspaceCommand())
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
 		logger.WithError(err).Fatal("Failed to run command.")
 	}
-	logger.Info("Command completed.")
 }
 
 func newWorkspaceCommand() *cobra.Command {
@@ -46,21 +53,26 @@ func newWorkspaceGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "get",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Log.Info("Running get command")
-			workspace, err := getWorkspace(cmd.Context(), "api.mp-papi-caddy-grpc.preview.gitpod-dev.com:443")
+			workspace, err := getWorkspace(cmd.Context(), apiAddress)
+			log.Log.WithError(err).WithField("workspace", workspace.String()).Debugf("Workspace response")
 			if err != nil {
-				log.Log.WithError(err).Errorf("Failed to retrieve workspace.")
+				log.Log.WithError(err).Fatal("Failed to retrieve workspace.")
+				return
 			}
 
-			log.Log.Infof("Got workspace: %v", workspace.String())
+			data, err := protojson.Marshal(workspace)
+			if err != nil {
+				log.Log.WithError(err).Fatal("Failed to serialize workspace into json")
+			}
+			_, _ = fmt.Fprint(os.Stdout, string(data))
 		},
 	}
 
 	return cmd
 }
 
-func getWorkspace(ctx context.Context, url string) (*v1.GetWorkspaceResponse, error) {
-	conn, err := newConn(url)
+func getWorkspace(ctx context.Context, address string) (*v1.GetWorkspaceResponse, error) {
+	conn, err := newConn(address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new connection: %w", err)
 	}
@@ -75,10 +87,14 @@ func getWorkspace(ctx context.Context, url string) (*v1.GetWorkspaceResponse, er
 	return resp, nil
 }
 
-func newConn(url string) (*grpc.ClientConn, error) {
+func newConn(address string) (*grpc.ClientConn, error) {
+	// Firstly, we need to obtain the server public certificate, we can do that by issuing a regular https request and then
+	// inspecting the cert
 	// For now, we just strip off the `api.` part to hit the site that's actually serving HTTPS traffic
-	certURL := strings.ReplaceAll(url, "api.", "")
-	cert, err := getCrets(fmt.Sprintf("https://%s", certURL))
+	certURL := fmt.Sprintf("https://%s", strings.ReplaceAll(address, "api.", ""))
+	log.Log.Debugf("Retrieving public certificate chain from URL: %s", certURL)
+
+	cert, err := getServerCertificateChain(certURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get certs: %w", err)
 	}
@@ -88,15 +104,15 @@ func newConn(url string) (*grpc.ClientConn, error) {
 		return nil, fmt.Errorf("failed to construct tls transport")
 	}
 
-	conn, err := grpc.Dial(url, grpc.WithTransportCredentials(transport))
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(transport))
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial %s: %w", url, err)
+		return nil, fmt.Errorf("failed to dial %s: %w", address, err)
 	}
 
 	return conn, nil
 }
 
-func getCrets(url string) ([]byte, error) {
+func getServerCertificateChain(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %w", err)
