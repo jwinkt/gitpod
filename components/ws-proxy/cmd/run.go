@@ -31,6 +31,7 @@ import (
 	"github.com/gitpod-io/gitpod/common-go/log"
 	"github.com/gitpod-io/gitpod/common-go/pprof"
 	wsmanapi "github.com/gitpod-io/gitpod/ws-manager/api"
+	workspacev1 "github.com/gitpod-io/gitpod/ws-manager/api/crd/v1"
 	"github.com/gitpod-io/gitpod/ws-proxy/pkg/config"
 	"github.com/gitpod-io/gitpod/ws-proxy/pkg/proxy"
 	"github.com/gitpod-io/gitpod/ws-proxy/pkg/sshproxy"
@@ -70,7 +71,8 @@ var runCmd = &cobra.Command{
 			log.WithError(err).Fatal(err, "unable to start manager")
 		}
 
-		workspaceInfoProvider := proxy.NewRemoteWorkspaceInfoProvider(mgr.GetClient(), mgr.GetScheme())
+		// workspaceInfoProvider := proxy.NewRemoteWorkspaceInfoProvider(mgr.GetClient(), mgr.GetScheme())
+		workspaceInfoProvider := proxy.NewCRDWorkspaceInfoProvider(mgr.GetClient(), mgr.GetScheme())
 		err = workspaceInfoProvider.SetupWithManager(mgr)
 		if err != nil {
 			log.WithError(err).Fatal(err, "unable to create controller", "controller", "Pod")
@@ -164,6 +166,7 @@ var runCmd = &cobra.Command{
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(workspacev1.AddToScheme(scheme))
 	rootCmd.AddCommand(runCmd)
 }
 

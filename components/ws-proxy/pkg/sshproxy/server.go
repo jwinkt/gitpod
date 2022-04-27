@@ -13,7 +13,7 @@ import (
 
 	"github.com/gitpod-io/gitpod/common-go/log"
 	supervisor "github.com/gitpod-io/gitpod/supervisor/api"
-	p "github.com/gitpod-io/gitpod/ws-proxy/pkg/proxy"
+	"github.com/gitpod-io/gitpod/ws-proxy/pkg/proxy"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
@@ -35,12 +35,12 @@ type Server struct {
 	Heartbeater Heartbeat
 
 	sshConfig             *ssh.ServerConfig
-	workspaceInfoProvider p.WorkspaceInfoProvider
+	workspaceInfoProvider proxy.WorkspaceInfoProvider
 }
 
 // New creates a new SSH proxy server
 
-func New(signers []ssh.Signer, workspaceInfoProvider p.WorkspaceInfoProvider, heartbeat Heartbeat) *Server {
+func New(signers []ssh.Signer, workspaceInfoProvider proxy.WorkspaceInfoProvider, heartbeat Heartbeat) *Server {
 	server := &Server{
 		workspaceInfoProvider: workspaceInfoProvider,
 		Heartbeater:           &noHeartbeat{},
