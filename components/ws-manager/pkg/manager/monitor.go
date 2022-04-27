@@ -912,7 +912,8 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 					"apiVersion": "snapshot.storage.k8s.io/v1",
 					"kind":       "VolumeSnapshot",
 					"metadata": map[string]interface{}{
-						"name": wso.Pod.Name,
+						"name":      wso.Pod.Name,
+						"namespace": m.manager.Config.Namespace,
 					},
 					"spec": map[string]interface{}{
 						"volumeSnapshotClassName": "csi-gce-pd-snapshot-class",
