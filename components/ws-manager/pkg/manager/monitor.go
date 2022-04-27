@@ -880,6 +880,7 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 			m.finalizerMapLock.Unlock()
 			return false, nil, nil
 		}
+		log.Infof("doFinalize called")
 
 		// Maybe the workspace never made it to a phase where we actually initialized a workspace.
 		// Assuming that once we've had a nodeName we've spoken to ws-daemon it's safe to assume that if
@@ -988,12 +989,14 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 
 		// DiposeWorkspace will "degenerate" to a simple wait if the finalization/disposal process is already running.
 		// This is unlike the initialization process where we wait for things to finish in a later phase.
+		log.Infof("snc.DisposeWorkspace")
 		resp, err := snc.DisposeWorkspace(ctx, &wsdaemon.DisposeWorkspaceRequest{
 			Id:                    workspaceID,
 			Backup:                doBackup && !pvcFeatureEnabled,
 			BackupLogs:            doBackupLogs,
 			PersistentVolumeClaim: pvcFeatureEnabled,
 		})
+		log.Infof("snc.DisposeWorkspace: %v, err: %v", resp, err)
 		if resp != nil {
 			gitStatus = resp.GitStatus
 		}
