@@ -35,6 +35,7 @@ import (
 	"github.com/gitpod-io/gitpod/common-go/pprof"
 	"github.com/gitpod-io/gitpod/content-service/pkg/layer"
 	"github.com/gitpod-io/gitpod/ws-manager/pkg/manager"
+	volumesnapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 )
 
 // serveCmd represents the serve command
@@ -100,6 +101,11 @@ var runCmd = &cobra.Command{
 		cp, err := layer.NewProvider(&cfg.Content.Storage)
 		if err != nil {
 			log.WithError(err).Fatal("invalid content provider configuration")
+		}
+
+		err = volumesnapshotv1.AddToScheme(mgr.GetScheme())
+		if err != nil {
+			log.WithError(err).Fatal("cannot register Kubernetes volumesnapshotv1 schema - this should never happen")
 		}
 
 		mgmt, err := manager.New(cfg.Manager, mgr.GetClient(), clientset, cp)
