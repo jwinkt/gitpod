@@ -924,6 +924,10 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 				// create snapshot object out of PVC
 				snapshotClassname := "csi-gce-pd-snapshot-class"
 				volumeSnapshot := &volumesnapshotv1.VolumeSnapshot{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "VolumeSnapshot",
+						APIVersion: "snapshot.storage.k8s.io/v1",
+					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      snapshotName,
 						Namespace: m.manager.Config.Namespace,
