@@ -13,6 +13,9 @@ RUN printf '\n-Dgtw.disable.exit.dialog=true\n' >> $(find /workdir/bin/ -name "*
 # enable shared indexes by default
 RUN printf '\nshared.indexes.download.auto.consent=true' >> "/workdir/bin/idea.properties"
 
+RUN printf '\nidea.is.internal=true' >> "/workdir/bin/idea.properties"
+RUN printf '\nfus.internal.test.mode=true' >> "/workdir/bin/idea.properties"
+
 FROM scratch
 ARG SUPERVISOR_IDE_CONFIG
 COPY --chown=33333:33333 ${SUPERVISOR_IDE_CONFIG} /ide-desktop/supervisor-ide-config.json
