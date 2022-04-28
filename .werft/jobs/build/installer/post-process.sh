@@ -258,6 +258,8 @@ while [ "$documentIndex" -le "$DOCS" ]; do
       yq w -i /tmp/"$NAME"overrides.yaml spec.containers[+].name workspace
       yq w -i /tmp/"$NAME"overrides.yaml "spec.containers.(name==workspace).env[+].name" GITPOD_PREVENT_METADATA_ACCESS
       yq w -i /tmp/"$NAME"overrides.yaml "spec.containers.(name==workspace).env.(name==GITPOD_PREVENT_METADATA_ACCESS).value" "true"
+      yq w -i /tmp/"$NAME"overrides.yaml "spec.containers.(name==workspace).env[+].name" SUPERVISOR_DEBUG_ENABLE
+      yq w -i /tmp/"$NAME"overrides.yaml "spec.containers.(name==workspace).env.(name==SUPERVISOR_DEBUG_ENABLE).value" "true"
 
       yq w -i k8s.yaml -d "$documentIndex" "data.[default.yaml]" -- "$(< /tmp/"$NAME"overrides.yaml)"
    fi
