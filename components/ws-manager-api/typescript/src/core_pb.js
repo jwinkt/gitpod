@@ -19,7 +19,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
+var global = (function() {
+  if (this) { return this; }
+  if (typeof window !== 'undefined') { return window; }
+  if (typeof global !== 'undefined') { return global; }
+  if (typeof self !== 'undefined') { return self; }
+  return Function('return this')();
+}.call(null));
 
 var content$service$api_initializer_pb = require('@gitpod/content-service/lib');
 goog.object.extend(proto, content$service$api_initializer_pb);
@@ -5700,7 +5706,8 @@ proto.wsman.WorkspaceConditions.toObject = function(includeInstance, msg) {
     networkNotReady: jspb.Message.getFieldWithDefault(msg, 8, 0),
     firstUserActivity: (f = msg.getFirstUserActivity()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     headlessTaskFailed: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    stoppedByRequest: jspb.Message.getFieldWithDefault(msg, 11, 0)
+    stoppedByRequest: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    pvcSnapshotVolume: jspb.Message.getFieldWithDefault(msg, 12, "")
   };
 
   if (includeInstance) {
@@ -5777,6 +5784,10 @@ proto.wsman.WorkspaceConditions.deserializeBinaryFromReader = function(msg, read
     case 11:
       var value = /** @type {!proto.wsman.WorkspaceConditionBool} */ (reader.readEnum());
       msg.setStoppedByRequest(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPvcSnapshotVolume(value);
       break;
     default:
       reader.skipField();
@@ -5875,6 +5886,13 @@ proto.wsman.WorkspaceConditions.serializeBinaryToWriter = function(message, writ
   if (f !== 0.0) {
     writer.writeEnum(
       11,
+      f
+    );
+  }
+  f = message.getPvcSnapshotVolume();
+  if (f.length > 0) {
+    writer.writeString(
+      12,
       f
     );
   }
@@ -6077,6 +6095,24 @@ proto.wsman.WorkspaceConditions.prototype.getStoppedByRequest = function() {
  */
 proto.wsman.WorkspaceConditions.prototype.setStoppedByRequest = function(value) {
   return jspb.Message.setProto3EnumField(this, 11, value);
+};
+
+
+/**
+ * optional string pvc_snapshot_volume = 12;
+ * @return {string}
+ */
+proto.wsman.WorkspaceConditions.prototype.getPvcSnapshotVolume = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.wsman.WorkspaceConditions} returns this
+ */
+proto.wsman.WorkspaceConditions.prototype.setPvcSnapshotVolume = function(value) {
+  return jspb.Message.setProto3StringField(this, 12, value);
 };
 
 

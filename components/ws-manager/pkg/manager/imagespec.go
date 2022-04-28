@@ -16,6 +16,7 @@ import (
 
 	"github.com/gitpod-io/gitpod/common-go/kubernetes"
 	wsk8s "github.com/gitpod-io/gitpod/common-go/kubernetes"
+	"github.com/gitpod-io/gitpod/common-go/log"
 	"github.com/gitpod-io/gitpod/common-go/tracing"
 	csapi "github.com/gitpod-io/gitpod/content-service/api"
 	"github.com/gitpod-io/gitpod/content-service/pkg/layer"
@@ -74,6 +75,7 @@ func (m *Manager) GetImageSpec(ctx context.Context, req *regapi.GetImageSpecRequ
 		if err != nil {
 			return nil, xerrors.Errorf("cannot unmarshal init config: %w", err)
 		}
+		log.Infof("Initializer data: %v", initializer)
 		var cl []layer.Layer
 		if pvcFeatureEnabled {
 			cl, _, err = m.Content.GetContentLayerPVC(ctx, owner, workspaceID, &initializer)

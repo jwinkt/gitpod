@@ -482,6 +482,12 @@ export interface Snapshot {
     message?: string;
 }
 
+export interface VolumeSnapshot {
+    id: string;
+    creationTime: string;
+    originalWorkspaceId: string;
+}
+
 export type SnapshotState = "pending" | "available" | "error";
 
 export interface LayoutData {

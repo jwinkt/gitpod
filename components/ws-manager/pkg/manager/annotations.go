@@ -66,6 +66,9 @@ const (
 	// pvcWorkspaceFeatureAnnotation is set on workspaces which are using persistent_volume_claim feature
 	pvcWorkspaceFeatureAnnotation = "gitpod.io/pvcFeature"
 
+	// pvcWorkspaceSnapshotVolumeAnnotation stores snapshot volume name when snapshot was created from pvc
+	pvcWorkspaceSnapshotVolumeAnnotation = "gitpod.io/snapshotVolumeName"
+
 	// gitpodFinalizerName is the name of the Gitpod finalizer we use to clean up a workspace
 	gitpodFinalizerName = "gitpod.io/finalizer"
 

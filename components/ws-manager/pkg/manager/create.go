@@ -26,6 +26,7 @@ import (
 
 	"github.com/gitpod-io/gitpod/common-go/kubernetes"
 	wsk8s "github.com/gitpod-io/gitpod/common-go/kubernetes"
+	"github.com/gitpod-io/gitpod/common-go/log"
 	"github.com/gitpod-io/gitpod/common-go/tracing"
 	content "github.com/gitpod-io/gitpod/content-service/pkg/initializer"
 	regapi "github.com/gitpod-io/gitpod/registry-facade/api"
@@ -300,6 +301,7 @@ func (m *Manager) createDefiniteWorkspacePod(startContext *startWorkspaceContext
 		return nil, xerrors.Errorf("cannot create remarshal image spec: %w", err)
 	}
 
+	log.Infof("Initializer: %v", *(startContext.Request.Spec.Initializer))
 	initCfg, err := proto.Marshal(startContext.Request.Spec.Initializer)
 	if err != nil {
 		return nil, xerrors.Errorf("cannot create remarshal initializer: %w", err)

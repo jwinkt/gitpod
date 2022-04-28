@@ -249,7 +249,8 @@ func (m *Manager) getWorkspaceStatus(wso workspaceObjects) (*api.WorkspaceStatus
 			Class:   wso.Pod.Labels[workspaceClassLabel],
 		},
 		Conditions: &api.WorkspaceConditions{
-			Snapshot: wso.Pod.Annotations[workspaceSnapshotAnnotation],
+			Snapshot:          wso.Pod.Annotations[workspaceSnapshotAnnotation],
+			PvcSnapshotVolume: wso.Pod.Annotations[pvcWorkspaceSnapshotVolumeAnnotation],
 		},
 		Runtime: &api.WorkspaceRuntimeInfo{
 			NodeName: wso.Pod.Spec.NodeName,

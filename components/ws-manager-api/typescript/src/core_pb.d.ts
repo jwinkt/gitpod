@@ -724,6 +724,8 @@ export class WorkspaceConditions extends jspb.Message {
     setHeadlessTaskFailed(value: string): WorkspaceConditions;
     getStoppedByRequest(): WorkspaceConditionBool;
     setStoppedByRequest(value: WorkspaceConditionBool): WorkspaceConditions;
+    getPvcSnapshotVolume(): string;
+    setPvcSnapshotVolume(value: string): WorkspaceConditions;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): WorkspaceConditions.AsObject;
@@ -747,6 +749,7 @@ export namespace WorkspaceConditions {
         firstUserActivity?: google_protobuf_timestamp_pb.Timestamp.AsObject,
         headlessTaskFailed: string,
         stoppedByRequest: WorkspaceConditionBool,
+        pvcSnapshotVolume: string,
     }
 }
 

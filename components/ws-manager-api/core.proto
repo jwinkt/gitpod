@@ -373,6 +373,9 @@ message WorkspaceConditions {
 
     // stopped_by_request is true if the workspace was stopped using a StopWorkspace call
     WorkspaceConditionBool stopped_by_request = 11;
+
+    // pvc_snapshot_volume contains the name of snapshot volume that was used to save persistent volume
+    string pvc_snapshot_volume = 12;
 }
 
 // WorkspaceConditionBool is a trinary bool: true/false/empty
