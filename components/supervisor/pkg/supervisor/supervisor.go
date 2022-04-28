@@ -1045,6 +1045,9 @@ func startAPIEndpoint(ctx context.Context, cfg *Config, wg *sync.WaitGroup, serv
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithWebsockets(true), grpcweb.WithWebsocketOriginFunc(func(req *http.Request) bool {
 		return true
 	}))
+	routes.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}))
 	routes.Handle("/_supervisor/v1/", http.StripPrefix("/_supervisor", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Content-Type"), "application/grpc") ||
 			websocket.IsWebSocketUpgrade(r) {
