@@ -241,18 +241,20 @@ func (s *WorkspaceService) InitWorkspace(ctx context.Context, req *api.InitWorks
 		}
 	}
 
-	// create a folder that is used to store data from running prestophook
-	deamonDir := fmt.Sprintf("%s-daemon", req.Id)
-	prestophookDir := filepath.Join(s.config.WorkingArea, deamonDir, "prestophookdata")
-	_, err = exec.CommandContext(ctx, "mkdir", "-p", prestophookDir).CombinedOutput()
-	if err != nil {
-		log.WithError(err).WithField("workspaceId", req.Id).Error("cannot create prestophookdata folder")
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("cannot create prestophookdata: %v", err))
-	}
-	_, err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", wsinit.GitpodUID, wsinit.GitpodGID), prestophookDir).CombinedOutput()
-	if err != nil {
-		log.WithError(err).WithField("workspaceId", req.Id).Error("cannot chown prestophookdata folder")
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("cannot chown prestophookdata: %v", err))
+	if req.PersistentVolumeClaim {
+		// create a folder that is used to store data from running prestophook
+		deamonDir := fmt.Sprintf("%s-daemon", req.Id)
+		prestophookDir := filepath.Join(s.config.WorkingArea, deamonDir, "prestophookdata")
+		_, err = exec.CommandContext(ctx, "mkdir", "-p", prestophookDir).CombinedOutput()
+		if err != nil {
+			log.WithError(err).WithField("workspaceId", req.Id).Error("cannot create prestophookdata folder")
+			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("cannot create prestophookdata: %v", err))
+		}
+		_, err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", wsinit.GitpodUID, wsinit.GitpodGID), prestophookDir).CombinedOutput()
+		if err != nil {
+			log.WithError(err).WithField("workspaceId", req.Id).Error("cannot chown prestophookdata folder")
+			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("cannot chown prestophookdata: %v", err))
+		}
 	}
 
 	// Tell the world we're done

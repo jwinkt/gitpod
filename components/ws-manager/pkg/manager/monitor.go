@@ -833,8 +833,6 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 	defer tracing.FinishSpan(span, nil)
 	log := log.WithFields(wso.GetOWI())
 
-	log.Infof("finalizeWorkspaceContent called")
-
 	workspaceID, ok := wso.WorkspaceID()
 	if !ok {
 		tracing.LogError(span, xerrors.Errorf("cannot find %s annotation", workspaceIDAnnotation))
@@ -935,23 +933,6 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 						VolumeSnapshotClassName: &snapshotClassname,
 					},
 				}
-				//volumesnapshotRes := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
-				/*snapshot := &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"apiVersion": "snapshot.storage.k8s.io/v1",
-						"kind":       "VolumeSnapshot",
-						"metadata": map[string]interface{}{
-							"name":      snapshotName,
-							"namespace": m.manager.Config.Namespace,
-						},
-						"spec": map[string]interface{}{
-							"volumeSnapshotClassName": "csi-gce-pd-snapshot-class",
-							"source": map[string]interface{}{
-								"persistentVolumeClaimName": pvcName,
-							},
-						},
-					},
-				}*/
 
 				err = m.manager.Clientset.Create(ctx, volumeSnapshot)
 				if err != nil {
