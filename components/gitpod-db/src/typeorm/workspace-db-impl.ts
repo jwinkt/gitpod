@@ -713,7 +713,7 @@ export abstract class AbstractTypeORMWorkspaceDBImpl implements WorkspaceDB {
 
     public async storeVolumeSnapshot(volumeSnapshot: VolumeSnapshot): Promise<VolumeSnapshot> {
         const volumeSnapshots = await this.getVolumeSnapshotRepo();
-        const dbVolumeSnapshot = volumeSnapshots as DBVolumeSnapshot;
+        const dbVolumeSnapshot = volumeSnapshot as DBVolumeSnapshot;
         return await volumeSnapshots.save(dbVolumeSnapshot);
     }
 
