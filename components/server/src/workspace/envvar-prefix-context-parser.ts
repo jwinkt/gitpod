@@ -11,6 +11,7 @@ import { EnvVarWithValue } from "@gitpod/gitpod-protocol/src/protocol";
 
 @injectable()
 export class EnvvarPrefixParser implements IPrefixContextParser {
+    readonly specifiedIDE: boolean = false;
     public findPrefix(user: User, context: string): string | undefined {
         const result = this.parse(context);
         return result && result.prefix;

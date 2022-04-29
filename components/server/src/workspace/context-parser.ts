@@ -96,11 +96,23 @@ export interface URLParts {
  * and expects "othercontext" to be parsed and passed back.
  */
 export interface IPrefixContextParser {
+    // readonly property to see if prefix context will specify an IDE
+    specifiedIDE: boolean;
     normalize?(contextURL: string): string | undefined;
     findPrefix(user: User, context: string): string | undefined;
     handle(user: User, prefix: string, context: WorkspaceContext): Promise<WorkspaceContext>;
 }
 export const IPrefixContextParser = Symbol("IPrefixContextParser");
+
+export interface IPrefixContextParserContext extends WorkspaceContext {
+    specifiedIDE?: boolean;
+}
+
+export namespace IPrefixContextParserContext {
+    export function is(context: any): context is IPrefixContextParserContext {
+        return context && "specifiedIDE" in context;
+    }
+}
 
 export namespace IssueContexts {
     export function toBranchName(user: User, issueTitle: string, issueNr: number): string {

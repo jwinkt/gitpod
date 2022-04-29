@@ -10,6 +10,7 @@ import { injectable } from "inversify";
 
 @injectable()
 export class ReferrerPrefixParser implements IPrefixContextParser {
+    readonly specifiedIDE: boolean = true;
     private readonly prefix = /^\/?referrer:([^\/:]*)(?::([^\/]*))?\//;
 
     findPrefix(_: User, context: string): string | undefined {

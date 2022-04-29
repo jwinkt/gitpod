@@ -10,6 +10,7 @@ import { IPrefixContextParser } from "../../../src/workspace/context-parser";
 
 @injectable()
 export class StartPrebuildContextParser implements IPrefixContextParser {
+    readonly specifiedIDE: boolean = false;
     static PREFIX = ContextURL.PREBUILD_PREFIX + "/";
 
     findPrefix(user: User, context: string): string | undefined {

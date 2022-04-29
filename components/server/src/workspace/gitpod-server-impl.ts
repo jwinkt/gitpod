@@ -157,6 +157,7 @@ import { ProjectEnvVar } from "@gitpod/gitpod-protocol/src/protocol";
 import { InstallationAdminSettings, TelemetryData } from "@gitpod/gitpod-protocol";
 import { Deferred } from "@gitpod/gitpod-protocol/lib/util/deferred";
 import { InstallationAdminTelemetryDataProvider } from "../installation-admin/telemetry-data-provider";
+import { IPrefixContextParserContext } from "./context-parser";
 
 // shortcut
 export const traceWI = (ctx: TraceContext, wi: Omit<LogContext, "userId">) => TraceContext.setOWI(ctx, wi); // userId is already taken care of in WebsocketConnectionManager
@@ -1057,6 +1058,10 @@ export class GitpodServerImpl implements GitpodServerWithTracing, Disposable {
                     event: "snapshot_access_granted",
                     properties: { snapshot_id: context.snapshotId },
                 }).catch();
+            }
+
+            if (User.isOnboardingUser(user) && (!IPrefixContextParserContext.is(context) || !context.specifiedIDE)) {
+                return { needOnboardingIde: true };
             }
 
             // if we're forced to use the default config, mark the context as such

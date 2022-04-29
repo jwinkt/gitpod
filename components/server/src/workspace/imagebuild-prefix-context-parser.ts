@@ -10,6 +10,7 @@ import { IPrefixContextParser } from "./context-parser";
 
 @injectable()
 export class ImageBuildPrefixContextParser implements IPrefixContextParser {
+    readonly specifiedIDE: boolean = false;
     static PREFIX = ContextURL.IMAGEBUILD_PREFIX + "/";
 
     findPrefix(user: User, context: string): string | undefined {

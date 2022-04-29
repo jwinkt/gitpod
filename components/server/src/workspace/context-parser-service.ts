@@ -7,7 +7,7 @@
 import { WorkspaceContext, User, CommitContext, GitCheckoutInfo, PullRequestContext } from "@gitpod/gitpod-protocol";
 import { injectable, multiInject, inject } from "inversify";
 import { HostContextProvider } from "../auth/host-context-provider";
-import { IPrefixContextParser, IContextParser } from "./context-parser";
+import { IPrefixContextParser, IContextParser, IPrefixContextParserContext } from "./context-parser";
 import { TraceContext } from "@gitpod/gitpod-protocol/lib/util/tracing";
 import { ConfigProvider, InvalidGitpodYMLError } from "./config-provider";
 
@@ -55,6 +55,7 @@ export class ContextParser {
 
             if (prefixResult) {
                 result = await prefixResult.parser.handle(user, prefixResult.prefix, result);
+                (result as IPrefixContextParserContext).specifiedIDE = prefixResult.parser.specifiedIDE;
             }
         } catch (e) {
             span.logEvent("error", e);

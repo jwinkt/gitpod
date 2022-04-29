@@ -1516,6 +1516,7 @@ type Repository struct {
 type WorkspaceCreationResult struct {
 	CreatedWorkspaceID         string                    `json:"createdWorkspaceId,omitempty"`
 	ExistingWorkspaces         []*WorkspaceInfo          `json:"existingWorkspaces,omitempty"`
+	NeedOnboardingIDE          bool                      `json:"needOnboardingIde,omitempty"`
 	RunningPrebuildWorkspaceID string                    `json:"runningPrebuildWorkspaceID,omitempty"`
 	RunningWorkspacePrebuild   *RunningWorkspacePrebuild `json:"runningWorkspacePrebuild,omitempty"`
 	WorkspaceURL               string                    `json:"workspaceURL,omitempty"`

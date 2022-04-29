@@ -15,7 +15,6 @@ import {
 import { ErrorCodes } from "@gitpod/gitpod-protocol/lib/messaging/error";
 import Modal from "../components/Modal";
 import { getGitpodService, gitpodHostUrl } from "../service/service";
-import { UserContext } from "../user-context";
 import { StartPage, StartPhase, StartWorkspaceError } from "./StartPage";
 import StartWorkspace, { parseProps } from "./StartWorkspace";
 import { openAuthorizeWindow } from "../provider-utils";
@@ -23,6 +22,8 @@ import { SelectAccountPayload } from "@gitpod/gitpod-protocol/lib/auth";
 import { SelectAccountModal } from "../settings/SelectAccountModal";
 import { watchHeadlessLogs } from "../components/PrebuildLogs";
 import CodeText from "../components/CodeText";
+import SelectIDEModal from "../settings/SelectIDEModal";
+import { UserContext } from "../user-context";
 
 const WorkspaceLogs = React.lazy(() => import("../components/WorkspaceLogs"));
 
@@ -249,6 +250,10 @@ export default class CreateWorkspace extends React.Component<CreateWorkspaceProp
                     onIgnorePrebuild={() => this.createWorkspace(CreateWorkspaceMode.ForceNew)}
                     onPrebuildSucceeded={() => this.createWorkspace(CreateWorkspaceMode.UsePrebuild)}
                 />
+            );
+        } else if (result?.needOnboardingIde) {
+            statusMessage = (
+                <SelectIDEModal onClose={() => this.createWorkspace(CreateWorkspaceMode.Default)}></SelectIDEModal>
             );
         }
 

@@ -1180,6 +1180,7 @@ export interface WorkspaceCreationResult {
     createdWorkspaceId?: string;
     workspaceURL?: string;
     existingWorkspaces?: WorkspaceInfo[];
+    needOnboardingIde?: boolean;
     runningWorkspacePrebuild?: {
         prebuildID: string;
         workspaceID: string;
@@ -1208,6 +1209,7 @@ export namespace WorkspaceCreationResult {
             data &&
             ("createdWorkspaceId" in data ||
                 "existingWorkspaces" in data ||
+                "needOnboardingIde" in data ||
                 "runningWorkspacePrebuild" in data ||
                 "runningPrebuildWorkspaceID" in data)
         );

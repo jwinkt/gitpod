@@ -16,6 +16,7 @@ import { IPrefixContextParser } from "./context-parser";
  */
 @injectable()
 export class AdditionalContentPrefixContextParser implements IPrefixContextParser {
+    readonly specifiedIDE: boolean = false;
     @inject(Config) protected readonly config: Config;
     static PREFIX = /^\/?additionalcontent\/([^\/]*)\//;
 
