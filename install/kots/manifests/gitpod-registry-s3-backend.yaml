@@ -11,5 +11,5 @@ metadata:
   annotations:
     kots.io/when: '{{repl and (ConfigOptionEquals "reg_incluster" "0") (ConfigOptionEquals "reg_s3storage" "1") }}'
 data:
-  s3AccessKey: '{{repl ConfigOption "reg_accesskey" | Base64Encode }}'
-  s3SecretKey: '{{repl ConfigOption "reg_secretkey" | Base64Encode }}'
+  s3AccessKey: '{{repl ConfigOption "reg_incluster_storage_s3_accesskey" | Base64Encode }}'
+  s3SecretKey: '{{repl ConfigOption "reg_incluster_storage_s3_secretkey" | Base64Encode }}'
