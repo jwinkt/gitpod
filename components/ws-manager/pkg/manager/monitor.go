@@ -721,7 +721,7 @@ func (m *Monitor) initializeWorkspaceContent(ctx context.Context, pod *corev1.Po
 			return xerrors.Errorf("cannot unmarshal init config: %w", err)
 		}
 
-		if fullWorkspaceBackup || pvcFeatureEnabled {
+		if fullWorkspaceBackup {
 			_, mf, err := m.manager.Content.GetContentLayer(ctx, workspaceMeta.Owner, workspaceMeta.MetaId, &initializer)
 			if err != nil {
 				return xerrors.Errorf("cannot download workspace content manifest: %w", err)
@@ -842,6 +842,7 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 
 	var disposalStatus *workspaceDisposalStatus
 	defer func() {
+		log.Infof("checking disposal status: %v", disposalStatus)
 		if disposalStatus == nil {
 			return
 		}
@@ -852,6 +853,7 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 			return
 		}
 
+		log.Infof("adding disposal mark")
 		err = m.manager.markWorkspace(ctx, workspaceID, addMark(disposalStatusAnnotation, string(b)))
 		if err != nil {
 			log.WithError(err).Error("was unable to update pod's disposal state - this will break someone's experience")
