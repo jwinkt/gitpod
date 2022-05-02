@@ -1251,6 +1251,11 @@ export class WorkspaceStarter {
             ideImage = ideConfig.ideOptions.options[ideConfig.ideOptions.defaultIde].image;
         }
 
+        let workspaceClass: string = "";
+        if (await this.userService.userGetsMoreResources(user)) {
+            workspaceClass = "gitpod.io/internal/xl";
+        }
+
         const spec = new StartWorkspaceSpec();
         await createGitpodTokenPromise;
         spec.setEnvvarsList(envvars);
@@ -1266,6 +1271,7 @@ export class WorkspaceStarter {
         spec.setWorkspaceImage(instance.workspaceImage);
         spec.setWorkspaceLocation(workspace.config.workspaceLocation || checkoutLocation);
         spec.setFeatureFlagsList(this.toWorkspaceFeatureFlags(featureFlags));
+        spec.setClass(workspaceClass);
         if (workspace.type === "regular") {
             spec.setTimeout(this.userService.workspaceTimeoutToDuration(await userTimeoutPromise));
         }
