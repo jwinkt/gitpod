@@ -26,9 +26,9 @@ func TestWorkspaceService_GetWorkspace(t *testing.T) {
 
 	client := v1.NewWorkspacesServiceClient(conn)
 
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", "some-token")
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", "some token")
 
-	workspaceID := "some-workspace-id"
+	workspaceID := "easycz-seer-xl8o1zacpyw"
 	resp, err := client.GetWorkspace(ctx, &v1.GetWorkspaceRequest{
 		WorkspaceId: workspaceID,
 	})

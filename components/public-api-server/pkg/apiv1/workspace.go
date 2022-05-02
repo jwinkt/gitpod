@@ -6,6 +6,10 @@ package apiv1
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/gitpod-io/gitpod/common-go/log"
+	gitpod "github.com/gitpod-io/gitpod/gitpod-protocol"
 	v1 "github.com/gitpod-io/gitpod/public-api/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -19,14 +23,40 @@ func NewWorkspaceService() *WorkspaceService {
 }
 
 type WorkspaceService struct {
+	serverEndpoint string
+
 	*v1.UnimplementedWorkspacesServiceServer
 }
 
 func (w *WorkspaceService) GetWorkspace(ctx context.Context, r *v1.GetWorkspaceRequest) (*v1.GetWorkspaceResponse, error) {
-	_, err := bearerTokenFromContext(ctx)
+	token, err := bearerTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(token)
+
+	endpoint := fmt.Sprintf("wss://%s/api/v1", "gitpod.io")
+	server, err := gitpod.ConnectToServer(endpoint, gitpod.ConnectToServerOpts{
+		Context: ctx,
+		Token:   token,
+		Log:     log.Log,
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to establish connection to downstream services")
+	}
+
+	workspace, err := server.GetWorkspace(ctx, r.GetWorkspaceId())
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "failed to get workspace")
+	}
+
+	log.Log.WithField("workspace", workspace).Infof("workspace %v", workspace)
+
+	b, err := json.Marshal(workspace)
+	if err != nil {
+		panic("failed to marshal")
+	}
+	fmt.Println(string(b))
 
 	return &v1.GetWorkspaceResponse{
 		Result: &v1.Workspace{
