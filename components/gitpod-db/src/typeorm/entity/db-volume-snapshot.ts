@@ -16,6 +16,9 @@ export class DBVolumeSnapshot implements VolumeSnapshot {
     @PrimaryColumn(TypeORM.UUID_COLUMN_TYPE)
     id: string;
 
+    @Column(TypeORM.UUID_COLUMN_TYPE)
+    snapshotVolumeId: string;
+
     @Column({
         type: "timestamp",
         precision: 6,

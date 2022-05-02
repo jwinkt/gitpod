@@ -68,16 +68,17 @@ type Manager struct {
 }
 
 type startWorkspaceContext struct {
-	Request        *api.StartWorkspaceRequest `json:"request"`
-	Labels         map[string]string          `json:"labels"`
-	CLIAPIKey      string                     `json:"cliApiKey"`
-	OwnerToken     string                     `json:"ownerToken"`
-	IDEPort        int32                      `json:"idePort"`
-	SupervisorPort int32                      `json:"supervisorPort"`
-	WorkspaceURL   string                     `json:"workspaceURL"`
-	TraceID        string                     `json:"traceID"`
-	Headless       bool                       `json:"headless"`
-	Class          *config.WorkspaceClass     `json:"class"`
+	Request          *api.StartWorkspaceRequest `json:"request"`
+	Labels           map[string]string          `json:"labels"`
+	CLIAPIKey        string                     `json:"cliApiKey"`
+	OwnerToken       string                     `json:"ownerToken"`
+	IDEPort          int32                      `json:"idePort"`
+	SupervisorPort   int32                      `json:"supervisorPort"`
+	WorkspaceURL     string                     `json:"workspaceURL"`
+	TraceID          string                     `json:"traceID"`
+	Headless         bool                       `json:"headless"`
+	Class            *config.WorkspaceClass     `json:"class"`
+	VolumeSnapshotID string                     `json:"volumeSnapshotId"`
 }
 
 func (swctx *startWorkspaceContext) ContainerConfiguration() config.ContainerConfiguration {

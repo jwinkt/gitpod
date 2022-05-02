@@ -37,6 +37,7 @@ import { WorkspaceCluster } from "@gitpod/gitpod-protocol/lib/workspace-cluster"
 import { repeat } from "@gitpod/gitpod-protocol/lib/util/repeat";
 import { PreparingUpdateEmulator, PreparingUpdateEmulatorFactory } from "./preparing-update-emulator";
 import { performance } from "perf_hooks";
+import { v4 as uuidv4 } from "uuid";
 
 export const WorkspaceManagerBridgeFactory = Symbol("WorkspaceManagerBridgeFactory");
 
@@ -353,6 +354,17 @@ export class WorkspaceManagerBridge implements Disposable {
 
             // now notify all prebuild listeners about updates - and update DB if needed
             await this.updatePrebuiltWorkspace({ span }, userId, status, writeToDB);
+
+            // update volume snapshot information
+            if (status.conditions.pvcSnapshotVolume != "" && writeToDB) {
+                const id = uuidv4();
+                await this.workspaceDB.trace(ctx).storeVolumeSnapshot({
+                    id,
+                    snapshotVolumeId: status.conditions.pvcSnapshotVolume,
+                    creationTime: new Date().toISOString(),
+                    originalWorkspaceId: workspaceId,
+                });
+            }
 
             if (writeToDB) {
                 await this.workspaceDB.trace(ctx).storeInstance(instance);

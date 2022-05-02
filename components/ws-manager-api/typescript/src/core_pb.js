@@ -6762,7 +6762,8 @@ proto.wsman.StartWorkspaceSpec.toObject = function(includeInstance, msg) {
     timeout: jspb.Message.getFieldWithDefault(msg, 10, ""),
     admission: jspb.Message.getFieldWithDefault(msg, 11, 0),
     ideImage: (f = msg.getIdeImage()) && proto.wsman.IDEImage.toObject(includeInstance, f),
-    pb_class: jspb.Message.getFieldWithDefault(msg, 13, "")
+    pb_class: jspb.Message.getFieldWithDefault(msg, 13, ""),
+    volumeSnapshotId: jspb.Message.getFieldWithDefault(msg, 14, "")
   };
 
   if (includeInstance) {
@@ -6853,6 +6854,10 @@ proto.wsman.StartWorkspaceSpec.deserializeBinaryFromReader = function(msg, reade
     case 13:
       var value = /** @type {string} */ (reader.readString());
       msg.setClass(value);
+      break;
+    case 14:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVolumeSnapshotId(value);
       break;
     default:
       reader.skipField();
@@ -6969,6 +6974,13 @@ proto.wsman.StartWorkspaceSpec.serializeBinaryToWriter = function(message, write
   if (f.length > 0) {
     writer.writeString(
       13,
+      f
+    );
+  }
+  f = message.getVolumeSnapshotId();
+  if (f.length > 0) {
+    writer.writeString(
+      14,
       f
     );
   }
@@ -7304,6 +7316,24 @@ proto.wsman.StartWorkspaceSpec.prototype.getClass = function() {
  */
 proto.wsman.StartWorkspaceSpec.prototype.setClass = function(value) {
   return jspb.Message.setProto3StringField(this, 13, value);
+};
+
+
+/**
+ * optional string volume_snapshot_id = 14;
+ * @return {string}
+ */
+proto.wsman.StartWorkspaceSpec.prototype.getVolumeSnapshotId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 14, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.wsman.StartWorkspaceSpec} returns this
+ */
+proto.wsman.StartWorkspaceSpec.prototype.setVolumeSnapshotId = function(value) {
+  return jspb.Message.setProto3StringField(this, 14, value);
 };
 
 

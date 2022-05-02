@@ -502,6 +502,9 @@ message StartWorkspaceSpec {
 
     // Class denotes the class of the workspace we ought to start
     string class = 13;
+
+    // volume_snapshot_id to use to restore PVC from, if set
+    string volume_snapshot_id = 14;
 }
 
 // WorkspaceFeatureFlag enable non-standard behaviour in workspaces

@@ -1270,6 +1270,14 @@ export class WorkspaceStarter {
             spec.setTimeout(this.userService.workspaceTimeoutToDuration(await userTimeoutPromise));
         }
         spec.setAdmission(admissionLevel);
+
+        const volumeSnapshots = await this.workspaceDb.trace(traceCtx).findVolumeSnapshotsByWorkspaceId(workspace.id);
+        if (volumeSnapshots.length > 0) {
+            const latestVolumeSnapshot = volumeSnapshots.reduce((previousValue, currentValue) =>
+                currentValue.creationTime > previousValue.creationTime ? currentValue : previousValue,
+            );
+            spec.setVolumeSnapshotId(latestVolumeSnapshot.snapshotVolumeId);
+        }
         return spec;
     }
 

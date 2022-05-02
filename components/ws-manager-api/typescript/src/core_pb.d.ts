@@ -876,6 +876,8 @@ export class StartWorkspaceSpec extends jspb.Message {
     setIdeImage(value?: IDEImage): StartWorkspaceSpec;
     getClass(): string;
     setClass(value: string): StartWorkspaceSpec;
+    getVolumeSnapshotId(): string;
+    setVolumeSnapshotId(value: string): StartWorkspaceSpec;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): StartWorkspaceSpec.AsObject;
@@ -901,6 +903,7 @@ export namespace StartWorkspaceSpec {
         admission: AdmissionLevel,
         ideImage?: IDEImage.AsObject,
         pb_class: string,
+        volumeSnapshotId: string,
     }
 }
 

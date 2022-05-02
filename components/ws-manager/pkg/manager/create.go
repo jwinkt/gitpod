@@ -237,7 +237,8 @@ func (m *Manager) createPVCForWorkspacePod(startContext *startWorkspaceContext) 
 		PVCConfig = startContext.Class.PVC
 	}
 	storageClassName := PVCConfig.StorageClass
-	return &corev1.PersistentVolumeClaim{
+
+	PVC := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-%s", prefix, req.Id),
 			Namespace: m.Config.Namespace,
@@ -251,7 +252,19 @@ func (m *Manager) createPVCForWorkspacePod(startContext *startWorkspaceContext) 
 				},
 			},
 		},
-	}, nil
+	}
+
+	log.Infof("PVC, VolumeSnapshotID: %v", startContext.VolumeSnapshotID)
+	if startContext.VolumeSnapshotID != "" {
+		snapshotApiGroup := "snapshot.storage.k8s.io"
+		PVC.Spec.DataSource = &corev1.TypedLocalObjectReference{
+			APIGroup: &snapshotApiGroup,
+			Kind:     "VolumeSnapshot",
+			Name:     startContext.VolumeSnapshotID,
+		}
+	}
+
+	return PVC, nil
 }
 
 // createDefiniteWorkspacePod creates a workspace pod without regard for any template.
@@ -301,7 +314,6 @@ func (m *Manager) createDefiniteWorkspacePod(startContext *startWorkspaceContext
 		return nil, xerrors.Errorf("cannot create remarshal image spec: %w", err)
 	}
 
-	log.Infof("Initializer: %v", *(startContext.Request.Spec.Initializer))
 	initCfg, err := proto.Marshal(startContext.Request.Spec.Initializer)
 	if err != nil {
 		return nil, xerrors.Errorf("cannot create remarshal initializer: %w", err)
@@ -882,16 +894,17 @@ func (m *Manager) newStartWorkspaceContext(ctx context.Context, req *api.StartWo
 	}
 
 	return &startWorkspaceContext{
-		Labels:         labels,
-		CLIAPIKey:      cliAPIKey,
-		OwnerToken:     ownerToken,
-		Request:        req,
-		IDEPort:        23000,
-		SupervisorPort: 22999,
-		WorkspaceURL:   workspaceURL,
-		TraceID:        traceID,
-		Headless:       headless,
-		Class:          class,
+		Labels:           labels,
+		CLIAPIKey:        cliAPIKey,
+		OwnerToken:       ownerToken,
+		Request:          req,
+		IDEPort:          23000,
+		SupervisorPort:   22999,
+		WorkspaceURL:     workspaceURL,
+		TraceID:          traceID,
+		Headless:         headless,
+		Class:            class,
+		VolumeSnapshotID: req.Spec.VolumeSnapshotId,
 	}, nil
 }
 
