@@ -1084,7 +1084,7 @@ func startAPIEndpoint(ctx context.Context, cfg *Config, wg *sync.WaitGroup, serv
 	r.Put("/metrics/job/:job", handler.Push(ms, true, true, false, nil))
 	r.Post("/metrics/job/:job", handler.Push(ms, false, true, false, nil))
 
-	routes.Handle("/metrics", r)
+	routes.Handle("/", r)
 
 	routes.Handle("/_supervisor/v1/", http.StripPrefix("/_supervisor", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Content-Type"), "application/grpc") ||
