@@ -75,12 +75,7 @@ var benchmarkCommand = &cobra.Command{
 				Timeout:           "5m",
 				WorkspaceImage:    "will-be-overriden",
 				WorkspaceLocation: "gitpod",
-				Envvars: []*api.EnvironmentVariable{
-					{
-						Name:  "THEIA_SUPERVISOR_TOKENS",
-						Value: `[{"token":"foobar","host":"gitpod-staging.com","scope":["function:getWorkspace","function:getLoggedInUser","function:getPortAuthenticationToken","function:getWorkspaceOwner","function:getWorkspaceUsers","function:isWorkspaceOwner","function:controlAdmission","function:setWorkspaceTimeout","function:getWorkspaceTimeout","function:sendHeartBeat","function:getOpenPorts","function:openPort","function:closePort","function:getLayout","function:generateNewGitpodToken","function:takeSnapshot","function:storeLayout","function:stopWorkspace","resource:workspace::fa498dcc-0a84-448f-9666-79f297ad821a::get/update","resource:workspaceInstance::e0a17083-6a78-441a-9b97-ef90d6aff463::get/update/delete","resource:snapshot::*::create/get","resource:gitpodToken::*::create","resource:userStorage::*::create/get/update"],"expiryDate":"2020-12-01T07:55:12.501Z","reuse":2}]`,
-					},
-				},
+				Envvars:           scenario.Environment,
 			},
 			Type: api.WorkspaceType_REGULAR,
 		}
@@ -162,8 +157,16 @@ func init() {
 	benchmarkCommand.Flags().StringVar(&benchmarkOpts.Host, "host", "localhost:8080", "ws-manager host to talk to")
 }
 
+// func setEnvVars(envVars []EnvVar)
+
 type BenchmarkScenario struct {
-	Workspaces int                    `json:"workspaces"`
-	IDEImage   string                 `json:"ideImage"`
-	Repos      []loadgen.WorkspaceCfg `json:"repos"`
+	Workspaces  int                        `json:"workspaces"`
+	IDEImage    string                     `json:"ideImage"`
+	Repos       []loadgen.WorkspaceCfg     `json:"repos"`
+	Environment []*api.EnvironmentVariable `json:"environment"`
 }
+
+// type EnvVar struct {
+// 	Name  string `json:"name"`
+// 	Value string `json:"value"`
+// }
