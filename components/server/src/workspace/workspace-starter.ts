@@ -838,6 +838,7 @@ export class WorkspaceStarter {
                         workspace.context,
                         user,
                         false,
+                        false,
                     );
                     source = initializer;
                     disp.push(disposable);
@@ -1239,7 +1240,24 @@ export class WorkspaceStarter {
                 checkoutLocation = ".";
             }
         }
-        const initializerPromise = this.createInitializer(traceCtx, workspace, workspace.context, user, mustHaveBackup);
+
+        let latestVolumeSnapshotId = "";
+        const volumeSnapshots = await this.workspaceDb.trace(traceCtx).findVolumeSnapshotsByWorkspaceId(workspace.id);
+        if (volumeSnapshots.length > 0) {
+            const latestVolumeSnapshot = volumeSnapshots.reduce((previousValue, currentValue) =>
+                currentValue.creationTime > previousValue.creationTime ? currentValue : previousValue,
+            );
+            latestVolumeSnapshotId = latestVolumeSnapshot.id;
+        }
+
+        const initializerPromise = this.createInitializer(
+            traceCtx,
+            workspace,
+            workspace.context,
+            user,
+            mustHaveBackup,
+            latestVolumeSnapshotId != "",
+        );
         const userTimeoutPromise = this.userService.getDefaultWorkspaceTimeout(user);
 
         const featureFlags = instance.configuration!.featureFlags || [];
@@ -1270,14 +1288,7 @@ export class WorkspaceStarter {
             spec.setTimeout(this.userService.workspaceTimeoutToDuration(await userTimeoutPromise));
         }
         spec.setAdmission(admissionLevel);
-
-        const volumeSnapshots = await this.workspaceDb.trace(traceCtx).findVolumeSnapshotsByWorkspaceId(workspace.id);
-        if (volumeSnapshots.length > 0) {
-            const latestVolumeSnapshot = volumeSnapshots.reduce((previousValue, currentValue) =>
-                currentValue.creationTime > previousValue.creationTime ? currentValue : previousValue,
-            );
-            spec.setVolumeSnapshotId(latestVolumeSnapshot.snapshotVolumeId);
-        }
+        spec.setVolumeSnapshotId(latestVolumeSnapshotId);
         return spec;
     }
 
@@ -1396,11 +1407,15 @@ export class WorkspaceStarter {
         context: WorkspaceContext,
         user: User,
         mustHaveBackup: boolean,
+        hasVolumeSnapshot: boolean,
     ): Promise<{ initializer: WorkspaceInitializer; disposable: Disposable }> {
         let result = new WorkspaceInitializer();
         const disp = new DisposableCollection();
 
-        if (mustHaveBackup) {
+        if (hasVolumeSnapshot) {
+            const snapshotVolume = new FromSnapshotVolumeInitializer();
+            result.setSnapshotVolume(snapshotVolume);
+        } else if (mustHaveBackup) {
             const backup = new FromBackupInitializer();
             if (CommitContext.is(context)) {
                 backup.setCheckoutLocation(context.checkoutLocation || "");

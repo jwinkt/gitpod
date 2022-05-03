@@ -484,7 +484,6 @@ export interface Snapshot {
 
 export interface VolumeSnapshot {
     id: string;
-    snapshotVolumeId: string;
     creationTime: string;
     originalWorkspaceId: string;
 }

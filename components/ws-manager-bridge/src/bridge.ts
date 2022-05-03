@@ -357,13 +357,16 @@ export class WorkspaceManagerBridge implements Disposable {
 
             // update volume snapshot information
             if (status.conditions.pvcSnapshotVolume != "" && writeToDB) {
-                const id = uuidv4();
-                await this.workspaceDB.trace(ctx).storeVolumeSnapshot({
-                    id,
-                    snapshotVolumeId: status.conditions.pvcSnapshotVolume,
-                    creationTime: new Date().toISOString(),
-                    originalWorkspaceId: workspaceId,
-                });
+                let existingSnapshot = await this.workspaceDB
+                    .trace(ctx)
+                    .findVolumeSnapshotById(status.conditions.pvcSnapshotVolume);
+                if (existingSnapshot === undefined) {
+                    await this.workspaceDB.trace(ctx).storeVolumeSnapshot({
+                        id: status.conditions.pvcSnapshotVolume,
+                        creationTime: new Date().toISOString(),
+                        originalWorkspaceId: workspaceId,
+                    });
+                }
             }
 
             if (writeToDB) {

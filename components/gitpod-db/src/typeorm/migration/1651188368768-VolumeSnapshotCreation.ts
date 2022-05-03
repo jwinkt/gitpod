@@ -10,7 +10,7 @@ import { tableExists } from "./helper/helper";
 export class VolumeSnapshotCreation1651188368768 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS d_b_volume_snapshot (  id char(36) NOT NULL, snapshotVolumeId char(36) NOT NULL, creationTime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),  originalWorkspaceId char(36) NOT NULL, PRIMARY KEY (id),  KEY ind_originalWorkspaceId (originalWorkspaceId),  KEY ind_dbsync (creationTime)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`,
+            `CREATE TABLE IF NOT EXISTS d_b_volume_snapshot (  id char(36) NOT NULL, creationTime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),  originalWorkspaceId char(36) NOT NULL, PRIMARY KEY (id),  KEY ind_originalWorkspaceId (originalWorkspaceId),  KEY ind_dbsync (creationTime)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`,
         );
     }
 
