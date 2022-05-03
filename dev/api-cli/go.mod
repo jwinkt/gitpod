@@ -55,3 +55,22 @@ replace k8s.io/kubectl => k8s.io/kubectl v0.23.5 // leeway indirect from compone
 replace k8s.io/mount-utils => k8s.io/mount-utils v0.23.5 // leeway indirect from components/common-go:lib
 
 replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.23.5 // leeway indirect from components/common-go:lib
+
+require (
+	github.com/gitpod-io/gitpod/common-go v0.0.0-00010101000000-000000000000
+	github.com/gitpod-io/gitpod/public-api v0.0.0-00010101000000-000000000000
+	github.com/spf13/cobra v1.4.0
+	google.golang.org/grpc v1.46.0
+	google.golang.org/protobuf v1.28.0
+)
+
+require (
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154 // indirect
+)
