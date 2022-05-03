@@ -15,11 +15,13 @@ packages:
       - dev/blowtorch:app
       - dev/gpctl:app
       - dev/loadgen:app
+      - dev/api-cli:app
   - name: dev-utils
     type: docker
     deps:
       - dev/gpctl:app
       - dev/kubecdl:app
+      - dev/api-cli:app
     argdeps:
       - imageRepoBase
     config:
