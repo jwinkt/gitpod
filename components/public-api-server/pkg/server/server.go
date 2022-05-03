@@ -25,7 +25,7 @@ func Start(logger *logrus.Entry, cfg Config) error {
 		return fmt.Errorf("failed to initialize public api server: %w", err)
 	}
 
-	if registerErr := register(srv, cfg); registerErr != nil {
+	if registerErr := register(srv); registerErr != nil {
 		return fmt.Errorf("failed to register services: %w", registerErr)
 	}
 
@@ -36,7 +36,7 @@ func Start(logger *logrus.Entry, cfg Config) error {
 	return nil
 }
 
-func register(srv *baseserver.Server, cfg Config) error {
+func register(srv *baseserver.Server) error {
 	logger := log.New()
 	m := middleware.NewLoggingMiddleware(logger)
 	srv.HTTPMux().Handle("/", m(http.HandlerFunc(HelloWorldHandler)))
