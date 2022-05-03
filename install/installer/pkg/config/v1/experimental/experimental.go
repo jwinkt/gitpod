@@ -64,6 +64,8 @@ type WorkspaceConfig struct {
 	} `json:"registryFacade"`
 
 	WorkspaceClasses map[string]WorkspaceClass `json:"classes,omitempty"`
+
+	UseWsmanagerMk2 bool `json:"useWsmanagerMk2,omitempty"`
 }
 
 type WorkspaceClass struct {

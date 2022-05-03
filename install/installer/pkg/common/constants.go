@@ -41,6 +41,7 @@ const (
 	ServerInstallationAdminPort = 9000
 	SystemNodeCritical          = "system-node-critical"
 	WSManagerComponent          = "ws-manager"
+	WSManagerMk2Component       = "ws-manager-mk2"
 	WSManagerBridgeComponent    = "ws-manager-bridge"
 	WSProxyComponent            = "ws-proxy"
 	ImageBuilderComponent       = "image-builder-mk3"
