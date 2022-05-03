@@ -30,7 +30,7 @@ func main() {
 		Use: "api-cli",
 	}
 
-	cmd.PersistentFlags().StringVar(&apiAddress, "address", "api.main.staging.gitpod-dev.com:443", "Address of the API endpoint. Should be in the form <host>:<port>.")
+	cmd.PersistentFlags().StringVar(&apiAddress, "address", "api.main.preview.gitpod-dev.com:443", "Address of the API endpoint. Should be in the form <host>:<port>.")
 
 	cmd.AddCommand(newWorkspaceCommand())
 
