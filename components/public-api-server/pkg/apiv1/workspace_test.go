@@ -12,16 +12,30 @@ import (
 	v1 "github.com/gitpod-io/gitpod/public-api/v1"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"testing"
 )
 
 func TestWorkspaceService_GetWorkspace(t *testing.T) {
+	const (
+		bearerToken      = "bearer-token-for-tests"
+		foundWorkspaceID = "easycz-seer-xl8o1zacpyw"
+	)
+
 	srv := baseserver.NewForTests(t)
 
-	connPool := &FakeServerConnPool{}
+	connPool := &FakeServerConnPool{
+		api: &FakeGitpodAPI{workspaces: map[string]*gitpod.WorkspaceInfo{
+			foundWorkspaceID: {
+				LatestInstance: &gitpod.WorkspaceInstance{},
+				Workspace:      &gitpod.Workspace{},
+			},
+		}},
+	}
 	v1.RegisterWorkspacesServiceServer(srv.GRPC(), NewWorkspaceService(connPool))
 	baseserver.StartServerForTests(t, srv)
 
@@ -29,32 +43,60 @@ func TestWorkspaceService_GetWorkspace(t *testing.T) {
 	require.NoError(t, err)
 
 	client := v1.NewWorkspacesServiceClient(conn)
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", bearerToken)
 
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", "some token")
+	scenarios := []struct {
+		name string
 
-	workspaceID := "easycz-seer-xl8o1zacpyw"
-	resp, err := client.GetWorkspace(ctx, &v1.GetWorkspaceRequest{
-		WorkspaceId: workspaceID,
-	})
-	require.NoError(t, err)
-	require.True(t, proto.Equal(&v1.GetWorkspaceResponse{
-		Result: &v1.Workspace{
-			WorkspaceId: workspaceID,
-			OwnerId:     "mock_owner",
-			ProjectId:   "mock_project_id",
-			Context: &v1.WorkspaceContext{
-				ContextUrl: "https://github.com/gitpod-io/gitpod",
-				Details:    nil,
+		WorkspaceID string
+
+		ErrorCode codes.Code
+		Response  *v1.GetWorkspaceResponse
+	}{
+		{
+			name:        "returns a workspace when workspace is found by ID",
+			WorkspaceID: foundWorkspaceID,
+			ErrorCode:   codes.OK,
+			Response: &v1.GetWorkspaceResponse{
+				Result: &v1.Workspace{
+					WorkspaceId: foundWorkspaceID,
+					OwnerId:     "mock_owner",
+					ProjectId:   "mock_project_id",
+					Context: &v1.WorkspaceContext{
+						ContextUrl: "https://github.com/gitpod-io/gitpod",
+						Details:    nil,
+					},
+					Description: "This is a mock response",
+				},
 			},
-			Description: "This is a mock response",
 		},
-	}, resp))
+		{
+			name:        "not found when workspace is not found by ID",
+			WorkspaceID: "some-not-found-workspace-id",
+			ErrorCode:   codes.NotFound,
+			Response:    nil,
+		},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.name, func(t *testing.T) {
+			resp, err := client.GetWorkspace(ctx, &v1.GetWorkspaceRequest{
+				WorkspaceId: scenario.WorkspaceID,
+			})
+			require.Equal(t, scenario.ErrorCode, status.Code(err), "status code must match")
+			require.True(t, proto.Equal(scenario.Response, resp))
+		})
+
+	}
+
 }
 
-type FakeServerConnPool struct{}
+type FakeServerConnPool struct {
+	api gitpod.APIInterface
+}
 
 func (f *FakeServerConnPool) Get(ctx context.Context, token string) (gitpod.APIInterface, error) {
-	return &FakeGitpodAPI{}, nil
+	return f.api, nil
 }
 
 type FakeGitpodAPI struct {
