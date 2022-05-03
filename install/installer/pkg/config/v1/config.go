@@ -61,6 +61,12 @@ func (v version) Defaults(in interface{}) error {
 	cfg.OpenVSX.URL = "https://open-vsx.org"
 	cfg.DisableDefinitelyGP = true
 
+	cfg.Experimental = &experimental.Config{
+		Workspace: &experimental.WorkspaceConfig{
+			UseWsmanagerMk2: true,
+		},
+	}
+
 	return nil
 }
 
