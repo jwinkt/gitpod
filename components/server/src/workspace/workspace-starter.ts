@@ -14,7 +14,11 @@ import {
     SnapshotInitializer,
     WorkspaceInitializer,
 } from "@gitpod/content-service/lib";
-import { CompositeInitializer, FromBackupInitializer } from "@gitpod/content-service/lib/initializer_pb";
+import {
+    CompositeInitializer,
+    FromBackupInitializer,
+    FromSnapshotVolumeInitializer,
+} from "@gitpod/content-service/lib/initializer_pb";
 import {
     DBUser,
     DBWithTracing,
