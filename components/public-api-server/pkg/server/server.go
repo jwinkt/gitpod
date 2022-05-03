@@ -15,17 +15,17 @@ import (
 	"net/http"
 )
 
-func Start(logger *logrus.Entry) error {
+func Start(logger *logrus.Entry, cfg Config) error {
 	srv, err := baseserver.New("public_api_server",
 		baseserver.WithLogger(logger),
-		baseserver.WithHTTPPort(9000),
-		baseserver.WithGRPCPort(9001),
+		baseserver.WithHTTPPort(cfg.HTTPPort),
+		baseserver.WithGRPCPort(cfg.GRPCPort),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize public api server: %w", err)
 	}
 
-	if registerErr := register(srv); registerErr != nil {
+	if registerErr := register(srv, cfg); registerErr != nil {
 		return fmt.Errorf("failed to register services: %w", registerErr)
 	}
 
@@ -36,7 +36,7 @@ func Start(logger *logrus.Entry) error {
 	return nil
 }
 
-func register(srv *baseserver.Server) error {
+func register(srv *baseserver.Server, cfg Config) error {
 	logger := log.New()
 	m := middleware.NewLoggingMiddleware(logger)
 	srv.HTTPMux().Handle("/", m(http.HandlerFunc(HelloWorldHandler)))
