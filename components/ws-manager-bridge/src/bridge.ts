@@ -37,7 +37,6 @@ import { WorkspaceCluster } from "@gitpod/gitpod-protocol/lib/workspace-cluster"
 import { repeat } from "@gitpod/gitpod-protocol/lib/util/repeat";
 import { PreparingUpdateEmulator, PreparingUpdateEmulatorFactory } from "./preparing-update-emulator";
 import { performance } from "perf_hooks";
-import { v4 as uuidv4 } from "uuid";
 
 export const WorkspaceManagerBridgeFactory = Symbol("WorkspaceManagerBridgeFactory");
 
